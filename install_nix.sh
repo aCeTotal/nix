@@ -108,9 +108,6 @@ until lukspass_selector; do : ; done
 # User choses the hostname.
 until hostname_selector; do : ; done
 
-# User sets up the user/root passwords.
-until userpass_selector; do : ; done
-
 # Warn user about deletion of old partition scheme.
 input_print "WARNING! This will wipe the current partition table on $DISK once installation starts. Do you agree [y/N]?: "
 read -r disk_response
