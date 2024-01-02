@@ -157,7 +157,6 @@ umount /mnt
 info_print "Mounting the newly created subvolumes."
 mountopts="ssd,noatime,compress-force=zstd:3,discard=async"
 sudo mkdir -p /mnt/{home,nix,/var/log,boot}
-done
 sudo mount -o "$mountopts",subvol=@root "$BTRFS" /mnt
 sudo mount -o "$mountopts",subvol=@home "$BTRFS" /mnt/home
 sudo mount -o "$mountopts",subvol=@nix "$BTRFS" /mnt/nix
