@@ -30,7 +30,7 @@ error_print () {
 }
 
 # Cloning the repo
-nix-shell -p git btrfs-progs python3 -c python
+nix-shell -p git btrfs-progs python3 python
 sudo git clone https://github.com/aCeTotal/nix.git
 
 # Password for the LUKS Container (function).
