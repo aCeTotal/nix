@@ -76,26 +76,6 @@ hostname_selector () {
     return 0
 }
 
-# User chooses the console keyboard layout (function).
-keyboard_selector () {
-    input_print "Please insert the keyboard layout to use in console (Enter empty to use the Norwegian layout, type us for international english or \"/\" to look up for keyboard layouts): "
-    read -r kblayout
-    case "$kblayout" in
-        '') kblayout="no-latin1"
-            info_print "The standard Norwegian keyboard layout will be used."
-            return 0;;
-        '/') localectl list-keymaps
-             clear
-             return 1;;
-        *) if ! localectl list-keymaps | grep -Fxq "$kblayout"; then
-               error_print "The specified keymap doesn't exist."
-               return 1
-           fi
-        info_print "Changing console layout to $kblayout."
-        return 0
-    esac
-}
-
 # Welcome screen.
 echo -ne "${BOLD}${BYELLOW}
 ======================================================================
@@ -127,9 +107,6 @@ done
 
 # Setting up LUKS password.
 until lukspass_selector; do : ; done
-
-# User choses the locale.
-until locale_selector; do : ; done
 
 # User choses the hostname.
 until hostname_selector; do : ; done
