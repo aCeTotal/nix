@@ -115,12 +115,12 @@ if ! [[ "${disk_response,,}" =~ ^(yes|y)$ ]]; then
     exit
 fi
 info_print "Wiping $DISK."
-wipefs -af "$DISK"
-sgdisk -Zo "$DISK"
+sudo wipefs -af "$DISK"
+sudo sgdisk -Zo "$DISK"
 
 # Creating a new partition scheme.
 info_print "Creating the partitions on $DISK."
-parted -s "$DISK" \
+sudo parted -s "$DISK" \
     mklabel gpt \
     mkpart ESP fat32 1MiB 513MiB \
     set 1 esp on \
@@ -131,7 +131,7 @@ CRYPTROOT="/dev/disk/by-partlabel/CRYPTROOT"
 
 # Formatting the ESP as FAT32.
 info_print "Formatting the EFI Partition as FAT32."
-mkfs.fat -F 32 "$ESP"
+sudo mkfs.fat -F 32 "$ESP"
 
 # Creating a LUKS Container for the root partition.
 info_print "Creating LUKS Container for the root partition."
@@ -141,30 +141,30 @@ BTRFS="/dev/mapper/cryptroot"
 
 # Formatting the LUKS Container as BTRFS.
 info_print "Formatting the LUKS container as BTRFS."
-mkfs.btrfs "$BTRFS"
-mkdir -p /mnt
-mount "$BTRFS" /mnt
+sudo mkfs.btrfs "$BTRFS"
+sudo mkdir -p /mnt
+sudo mount "$BTRFS" /mnt
 
 # Creating BTRFS subvolumes.
 info_print "Creating BTRFS subvolumes."
 subvols=(root home nix log)
 for subvol in '' "${subvols[@]}"; do
-    btrfs su cr /mnt/@"$subvol"
+    sudo btrfs su cr /mnt/@"$subvol"
 done
 
 # Mounting the newly created subvolumes.
 umount /mnt
 info_print "Mounting the newly created subvolumes."
 mountopts="ssd,noatime,compress-force=zstd:3,discard=async"
-mkdir -p /mnt/{home,nix,/var/log,boot}
+sudo mkdir -p /mnt/{home,nix,/var/log,boot}
 done
-mount -o "$mountopts",subvol=@root "$BTRFS" /mnt
-mount -o "$mountopts",subvol=@home "$BTRFS" /mnt/home
-mount -o "$mountopts",subvol=@nix "$BTRFS" /mnt/nix
-mount -o "$mountopts",subvol=@log "$BTRFS" /mnt/var/log
-mount "$ESP" /mnt/boot/
+sudo mount -o "$mountopts",subvol=@root "$BTRFS" /mnt
+sudo mount -o "$mountopts",subvol=@home "$BTRFS" /mnt/home
+sudo mount -o "$mountopts",subvol=@nix "$BTRFS" /mnt/nix
+sudo mount -o "$mountopts",subvol=@log "$BTRFS" /mnt/var/log
+sudo mount "$ESP" /mnt/boot/
 
-nixos-generate-config --root /mnt
+sudo nixos-generate-config --root /mnt
 
 
 
