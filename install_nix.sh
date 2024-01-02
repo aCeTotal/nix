@@ -111,7 +111,7 @@ sudo mkfs.fat -F 32 "$ESP"
 
 # Formatting the LUKS Container as BTRFS.
 info_print "Formatting the LUKS container as BTRFS."
-sudo mkfs.btrfs "$ROOT"
+sudo mkfs.btrfs -f "$ROOT"
 sudo mkdir -p /mnt
 sudo mount "$ROOT" /mnt
 
@@ -146,11 +146,11 @@ microcode_detector
 # Check if NVIDIA GPU is found
 if lspci -k | grep -A 2 -E "(VGA|3D)" | grep -iq nvidia; then
 info_print "NVIDIA GPU FOUND! Installing nvidia-related packages!"  
-nvidia1=services.xserver.videoDrivers = ["nvidia"];
+nvidia1="services.xserver.videoDrivers = ["nvidia"];"
 
 # Installing HyprNix.
 info_print "Installing HyprNix!"
-sudo rm /mnt/etc/nixos/configuration.nix && cat /mnt/etc/nixos/configuration.nix
+sudo rm /mnt/etc/nixos/configuration.nix #&& cat /mnt/etc/nixos/configuration.nix
 cat << EOF | sudo tee -a /mnt/etc/nixos/configuration.nix
 
 # Edit this configuration file to define what should be installed on
@@ -401,7 +401,7 @@ cat << EOF | sudo tee -a /mnt/etc/nixos/configuration.nix
 EOF
 
 # Creating Home.nix for Home-Manager.
-sudo rm /mnt/etc/nixos/home.nix && cat /mnt/etc/nixos/home.nix
+sudo rm /mnt/etc/nixos/home.nix #&& cat /mnt/etc/nixos/home.nix
 cat << EOF | sudo tee -a /mnt/etc/nixos/home.nix
 
 { config, pkgs, ... }:
@@ -844,4 +844,3 @@ info_print "2. Log in with your user and password."
 info_print "3. bash <(curl -sL bit.ly/install_hyprarch)"
 info_print "4. Reboot."
 info_print "GOOD LUCK! :)"
-exit
