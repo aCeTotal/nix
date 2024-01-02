@@ -123,7 +123,7 @@ for subvol in '' "${subvols[@]}"; do
 done
 
 # Mounting the newly created subvolumes.
-umount /mnt
+sudo umount /mnt
 info_print "Mounting the newly created subvolumes."
 mountopts="ssd,noatime,compress-force=zstd:3,discard=async"
 sudo mkdir -p /mnt/{home,nix,/var/log,boot}
@@ -138,7 +138,7 @@ sudo nixos-generate-config --root /mnt
 
 
 # Storing the timezone
-timezone=curl http://ip-api.com/line?fields=timezone
+timezone="curl http://ip-api.com/line?fields=timezone"
 
 # Checking the microcode to install.
 microcode_detector
