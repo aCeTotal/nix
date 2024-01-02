@@ -140,7 +140,7 @@ sudo nixos-generate-config --root /mnt
 
 # Installing HyprNix.
 info_print "Installing HyprNix!"
-sudo rm /mnt/etc/nixos/configuration.nix && cat /mnt/etc/nixos/configuration.nix
+sudo rm /mnt/etc/nixos/configuration.nix
 cat << EOF | sudo tee -a /mnt/etc/nixos/configuration.nix
 
 # Edit this configuration file to define what should be installed on
