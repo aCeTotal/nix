@@ -122,14 +122,10 @@ for subvol in '' "${subvols[@]}"; do
     sudo btrfs su cr /mnt/@"$subvol"
 done
 
-sudo mkdir -p /mnt/{home,nix,var/log,boot}
-cd /mnt && sudo mkdir -p homis
-
 # Mounting the newly created subvolumes.
 info_print "Mounting the newly created subvolumes."
 sudo umount -l /mnt
 sudo mkdir -p /mnt/{home,nix,var/log,boot}
-
 mountopts="ssd,noatime,compress=zstd,discard=async"
 sudo mount -o "$mountopts",subvol=@root "$ROOT" /mnt
 sudo mount -o "$mountopts",subvol=@home "$ROOT" /mnt/home
