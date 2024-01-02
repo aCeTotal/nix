@@ -124,9 +124,9 @@ done
 
 # Mounting the newly created subvolumes.
 info_print "Mounting the newly created subvolumes."
-mountopts="ssd,noatime,compress-force=zstd:3,discard=async"
-sudo mkdir -p /mnt/{home,nix,/var/log,boot}
 sudo umount /mnt
+mountopts="ssd,noatime,compress-force=zstd:3,discard=async"
+sudo mkdir -p /mnt/{home,nix,var/log,boot}
 sudo mount -o "$mountopts",subvol=@root "$ROOT" /mnt
 sudo mount -o "$mountopts",subvol=@home "$ROOT" /mnt/home
 sudo mount -o "$mountopts",subvol=@nix "$ROOT" /mnt/nix
