@@ -125,17 +125,16 @@ done
 # Mounting the newly created subvolumes.
 info_print "Mounting the newly created subvolumes."
 sudo umount -l /mnt
-sleep 2
-sudo mkdir -p /mnt/{home,nix,var/log}
-sleep 2
+sudo mkdir -p /mnt/home
+sudo mkdir -p /mnt/nix
+sudo mkdir -p /mnt/var/log
+sudo mkdir -p /mnt/boot
 
 sudo mount -o compress=zstd,subvol=@root "$ROOT" /mnt
 sudo mount -o compress=zstd,subvol=@home "$ROOT" /mnt/home
 sudo mount -o compress=zstd,noatime,subvol=@nix "$ROOT" /mnt/nix
 sudo mount -o compress=zstd,subvol=@log "$ROOT" /mnt/var/log
-sudo mkdir -p /mnt/boot
 sudo mount "$ESP" /mnt/boot/
-sleep 3
 
 sudo nixos-generate-config --root /mnt
 
