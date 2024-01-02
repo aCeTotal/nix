@@ -125,16 +125,14 @@ done
 # Mounting the newly created subvolumes.
 info_print "Mounting the newly created subvolumes."
 sudo umount -l /mnt
-sleep 3
-info_print "Mounting the newly created subvolumes."
+sleep 2
 sudo mkdir -p /mnt/{home,nix,var/log,boot}
-sleep 3
-info_print "Mounting the newly created subvolumes."
-mountopts="ssd,noatime,compress=zstd,discard=async"
-sudo mount -o "$mountopts",subvol=@root "$ROOT" /mnt
-sudo mount -o "$mountopts",subvol=@home "$ROOT" /mnt/home
-sudo mount -o "$mountopts",subvol=@nix "$ROOT" /mnt/nix
-sudo mount -o "$mountopts",subvol=@log "$ROOT" /mnt/var/log
+sleep 2
+
+sudo mount -o compress=zstd,subvol=@root "$ROOT" /mnt
+sudo mount -o compress=zstd,subvol=@home "$ROOT" /mnt/home
+sudo mount -o compress=zstd,noatime,subvol=@nix "$ROOT" /mnt/nix
+sudo mount -o compress=zstd,subvol=@log "$ROOT" /mnt/var/log
 sudo mount "$ESP" /mnt/boot/
 sleep 3
 
