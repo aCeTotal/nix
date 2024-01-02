@@ -29,6 +29,10 @@ error_print () {
     echo -e "${BOLD}${BRED}[ ${BBLUE}•${BRED} ] $1${RESET}"
 }
 
+# Cloning the repo
+nix-shell -p git btrfs-progs python3 -c python
+sudo git clone https://github.com/aCeTotal/nix.git
+
 # Password for the LUKS Container (function).
 lukspass_selector () {
     input_print "Please enter a password for the LUKS container (you're not going to see the password): "
@@ -146,7 +150,6 @@ sgdisk -Zo "$DISK"
 
 # Creating a new partition scheme.
 info_print "Creating the partitions on $DISK."
-nix-shell -p btrfs-progs python3 -c python
 parted -s "$DISK" \
     mklabel gpt \
     mkpart ESP fat32 1MiB 513MiB \
