@@ -128,5 +128,12 @@ sudo umount -l /mnt
 sudo mkdir -p /mnt/{home,nix,var/log,boot}
 sleep 3
 info_print "Test"
+mountopts="ssd,noatime,compress=zstd,discard=async"
+sudo mount -o "$mountopts",subvol=@root "$ROOT" /mnt
+sudo mount -o "$mountopts",subvol=@home "$ROOT" /mnt/home
+sudo mount -o "$mountopts",subvol=@nix "$ROOT" /mnt/nix
+sudo mount -o "$mountopts",subvol=@log "$ROOT" /mnt/var/log
+sudo mount "$ESP" /mnt/boot/
+sleep 2
 
 sudo nixos-generate-config --root /mnt
