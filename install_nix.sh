@@ -126,13 +126,14 @@ done
 info_print "Mounting the newly created subvolumes."
 sudo umount -l /mnt
 sleep 2
-sudo mkdir -p /mnt/{home,nix,var/log,boot}
+sudo mkdir -p /mnt/{home,nix,var/log}
 sleep 2
 
 sudo mount -o compress=zstd,subvol=@root "$ROOT" /mnt
 sudo mount -o compress=zstd,subvol=@home "$ROOT" /mnt/home
 sudo mount -o compress=zstd,noatime,subvol=@nix "$ROOT" /mnt/nix
 sudo mount -o compress=zstd,subvol=@log "$ROOT" /mnt/var/log
+sudo mkdir -p /mnt/boot
 sudo mount "$ESP" /mnt/boot/
 sleep 3
 
