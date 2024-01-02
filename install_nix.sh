@@ -124,6 +124,8 @@ done
 
 # Mounting the newly created subvolumes.
 info_print "Mounting the newly created subvolumes."
+sudo mkdir -p /mnt/ugu
+sudo mkdir /mnt/ifi
 sudo umount /mnt
 sudo mkdir -p /mnt/{home,nix,var/log,boot}
 sudo mkdir -p /mnt/nix
