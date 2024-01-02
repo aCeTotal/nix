@@ -122,6 +122,9 @@ for subvol in '' "${subvols[@]}"; do
     sudo btrfs su cr /mnt/@"$subvol"
 done
 
+sudo mkdir -p /mnt/{home,nix,var/log,boot}
+cd /mnt && sudo mkdir -p homis
+
 # Mounting the newly created subvolumes.
 info_print "Mounting the newly created subvolumes."
 sudo mkdir -p /mnt/ugu
@@ -838,12 +841,3 @@ sudo nixos-install
 cd && cd nix
 sudo cp -r configfiles/ /etc/
 sudo cp -r scripts/ /etc/
-
-
-# Finishing up.
-info_print "Almost done!"
-info_print "1. Type reboot and hit enter to reboot the system."
-info_print "2. Log in with your user and password."
-info_print "3. bash <(curl -sL bit.ly/install_hyprarch)"
-info_print "4. Reboot."
-info_print "GOOD LUCK! :)"
