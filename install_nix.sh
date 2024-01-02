@@ -121,10 +121,10 @@ sudo sgdisk -Zo "$DISK"
 # Creating a new partition scheme.
 info_print "Creating the partitions on $DISK."
 sudo parted -s "$DISK" \
-    mklabel gpt \
-    mkpart ESP fat32 1MiB 513MiB \
-    set 1 esp on \
-    mkpart CRYPTROOT 513MiB 100% \
+    sudo mklabel gpt \
+    sudo mkpart ESP fat32 1MiB 513MiB \
+    sudo set 1 esp on \
+    sudo mkpart CRYPTROOT 513MiB 100% \
 
 ESP="/dev/disk/by-partlabel/ESP"
 CRYPTROOT="/dev/disk/by-partlabel/CRYPTROOT"
