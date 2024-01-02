@@ -122,9 +122,19 @@ for subvol in '' "${subvols[@]}"; do
     sudo btrfs su cr /mnt/@"$subvol"
 done
 
+sudo mkdir -p /mnt/{home,nix,var/log,boot}
+cd /mnt && sudo mkdir -p homis
+
 # Mounting the newly created subvolumes.
 info_print "Mounting the newly created subvolumes."
 sudo umount -l /mnt
-
 sudo mkdir -p /mnt/{home,nix,var/log,boot}
-mkdir /mnt/ff
+
+mountopts="ssd,noatime,compress=zstd,discard=async"
+sudo mount -o "$mountopts",subvol=@root "$ROOT" /mnt
+sudo mount -o "$mountopts",subvol=@home "$ROOT" /mnt/home
+sudo mount -o "$mountopts",subvol=@nix "$ROOT" /mnt/nix
+sudo mount -o "$mountopts",subvol=@log "$ROOT" /mnt/var/log
+sudo mount "$ESP" /mnt/boot/
+
+sudo nixos-generate-config --root /mnt
