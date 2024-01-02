@@ -127,7 +127,7 @@ cd /mnt && sudo mkdir -p homis
 
 # Mounting the newly created subvolumes.
 info_print "Mounting the newly created subvolumes."
-sudo umount /mnt
+sudo umount -l /mnt
 sudo mkdir -p /mnt/{home,nix,var/log,boot}
 mountopts="ssd,noatime,compress-force=zstd:3,discard=async"
 sudo mount -o "$mountopts",subvol=@root "$ROOT" /mnt
