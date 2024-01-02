@@ -91,9 +91,6 @@ echo -ne "${BOLD}${BYELLOW}
 ${RESET}"
 info_print "Welcome to the installation of HyprNix! :)"
 
-# Setting up keyboard layout.
-until keyboard_selector; do : ; done
-
 # Choosing the target for the installation.
 info_print "Available disks for the installation:"
 lsblk
