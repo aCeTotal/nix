@@ -32,26 +32,6 @@ error_print () {
 # Cloning the repo
 sudo git clone https://github.com/aCeTotal/nix.git
 
-# Password for the LUKS Container (function).
-lukspass_selector () {
-    input_print "Please enter a password for the LUKS container (you're not going to see the password): "
-    read -r -s password
-    if [[ -z "$password" ]]; then
-        echo
-        error_print "You need to enter a password for the LUKS Container, please try again."
-        return 1
-    fi
-    echo
-    input_print "Please enter the password for the LUKS container again (you're not going to see the password): "
-    read -r -s password2
-    echo
-    if [[ "$password" != "$password2" ]]; then
-        error_print "Passwords don't match, please try again."
-        return 1
-    fi
-    return 0
-}
-
 # Microcode detector (function).
 microcode_detector () {
     CPU=$(grep vendor_id /proc/cpuinfo)
@@ -101,9 +81,6 @@ do
     break
 done
 
-# Setting up LUKS password.
-until lukspass_selector; do : ; done
-
 # User choses the hostname.
 until hostname_selector; do : ; done
 
@@ -123,26 +100,20 @@ info_print "Creating the partitions on $DISK."
 sudo parted -s "$DISK" mklabel gpt
 sudo parted -s "$DISK" mkpart ESP fat32 1MiB 513MiB
 sudo parted -s "$DISK" set 1 esp on
-sudo parted -s "$DISK" mkpart CRYPTROOT 513MiB 100%
+sudo parted -s "$DISK" mkpart ROOT 513MiB 100%
 
 ESP="/dev/disk/by-partlabel/ESP"
-CRYPTROOT="/dev/disk/by-partlabel/CRYPTROOT"
+ROOT="/dev/disk/by-partlabel/ROOT"
 
 # Formatting the ESP as FAT32.
 info_print "Formatting the EFI Partition as FAT32."
 sudo mkfs.fat -F 32 "$ESP"
 
-# Creating a LUKS Container for the root partition.
-info_print "Creating LUKS Container for the root partition."
-echo -n "$password" | sudo cryptsetup luksFormat "$CRYPTROOT" -d -
-echo -n "$password" | sudo cryptsetup open "$CRYPTROOT" cryptroot -d - 
-BTRFS="/dev/mapper/cryptroot"
-
 # Formatting the LUKS Container as BTRFS.
 info_print "Formatting the LUKS container as BTRFS."
-sudo mkfs.btrfs "$BTRFS"
+sudo mkfs.btrfs "$ROOT"
 sudo mkdir -p /mnt
-sudo mount "$BTRFS" /mnt
+sudo mount "$ROOT" /mnt
 
 # Creating BTRFS subvolumes.
 info_print "Creating BTRFS subvolumes."
@@ -156,10 +127,10 @@ umount /mnt
 info_print "Mounting the newly created subvolumes."
 mountopts="ssd,noatime,compress-force=zstd:3,discard=async"
 sudo mkdir -p /mnt/{home,nix,/var/log,boot}
-sudo mount -o "$mountopts",subvol=@root "$BTRFS" /mnt
-sudo mount -o "$mountopts",subvol=@home "$BTRFS" /mnt/home
-sudo mount -o "$mountopts",subvol=@nix "$BTRFS" /mnt/nix
-sudo mount -o "$mountopts",subvol=@log "$BTRFS" /mnt/var/log
+sudo mount -o "$mountopts",subvol=@root "$ROOT" /mnt
+sudo mount -o "$mountopts",subvol=@home "$ROOT" /mnt/home
+sudo mount -o "$mountopts",subvol=@nix "$ROOT" /mnt/nix
+sudo mount -o "$mountopts",subvol=@log "$ROOT" /mnt/var/log
 sudo mount "$ESP" /mnt/boot/
 
 sudo nixos-generate-config --root /mnt
