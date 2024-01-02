@@ -836,8 +836,8 @@ in
 EOF
 
 
-cd /mnt
-sudo nixos-install
-cd && cd nix
-sudo cp -r configfiles/ /etc/
-sudo cp -r scripts/ /etc/
+#cd /mnt
+#sudo nixos-install
+#cd && cd nix
+#sudo cp -r configfiles/ /etc/
+#sudo cp -r scripts/ /etc/
