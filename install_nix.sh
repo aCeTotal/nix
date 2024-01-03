@@ -832,6 +832,8 @@ return 0
 # Mount the BTRFS subvolumes
 mount_subvolumes
 
+nixos-install --no-root-passwd
+
 # Creating the System-Config based on the input
 generate_systemconf
 
@@ -847,5 +849,5 @@ cd ~/nix
 sudo cp -r configfiles/ /etc/
 sudo cp -r scripts/ /etc/
 
-sudo nixos-install --no-root-passwd
+sudo nixos-rebuild switch --no-root-passwd
 
