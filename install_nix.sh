@@ -123,8 +123,10 @@ done
 mountpoints_creation () {
 # Create mountpoints.
 info_print "Creating mounting points"
-  sudo umount -l /mnt &>/dev/null
+  sudo umount -l /mnt
   sudo mkdir -p /mnt/{home,nix,var/log,boot}
+  sudo mkdir -p /mnt/uhfuh
+  sudo mkdir -p /mnt/uhfuh555
   return 0
 }
 
