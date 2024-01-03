@@ -115,20 +115,16 @@ sudo mount "$ROOT" /mnt
 
 # Creating BTRFS subvolumes.
 info_print "Creating BTRFS subvolumes."
-subvols=(root home nix log)
-for subvol in '' "${subvols[@]}"; do
-    sudo btrfs su cr /mnt/@"$subvol"
-done
+    sudo btrfs subvolume create /mnt/root
+    sudo btrfs subvolume create /mnt/home
+    sudo btrfs subvolume create /mnt/nix
+    sudo btrfs subvolume create /mnt/log
 
 mountpoints_creation () {
 # Create mountpoints.
 info_print "Creating mounting points"
   sudo umount -l /mnt
-  sudo mkdir -p /mnt/uhfuh
-  sudo mkdir -p /mnt/uhfuh555
   sudo mkdir -p /mnt/{home,nix,var/log,boot}
-  sudo mkdir -p /mnt/uhfuh
-  sudo mkdir -p /mnt/uhfuh555
   return 0
 }
 
@@ -137,11 +133,11 @@ mount -t btrfs -o subvol=/@/@mine,defaults,nossd,user /dev/sdd2   /home/me/bulk
 mount_subvolumes () {
 # Mount subvolumes.
 info_print "Mounting the newly created subvolumes."
-  mount -t btrfs -o subvol=@root,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt
-  mount -t btrfs -o subvol=@home,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/home
-  mount -t btrfs -o subvol=@nix,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/nix
-  mount -t btrfs -o subvol=@log,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/var/log
-  mount "$ESP" /mnt/boot/
+  sudo mount -t btrfs -o subvol=root,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt
+  sudo mount -t btrfs -o subvol=home,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/home
+  sudo mount -t btrfs -o subvol=nix,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/nix
+  sudo mount -t btrfs -o subvol=log,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/var/log
+  sudo mount "$ESP" /mnt/boot/
 
   sudo nixos-generate-config --root /mnt
   return 0
