@@ -126,7 +126,6 @@ done
 mountpoints_creation () {
 # Create mountpoints.
 info_print "Creating mounting points"
-do
   sudo umount -l /mnt
   sudo mkdir -p /mnt/home
   sudo mkdir -p /mnt/nix
@@ -152,7 +151,6 @@ done
 
 create_mainconf () {
 # Create Configuration.nix.
-do
 info_print "Creating the main configuration.nix"
 sudo rm /mnt/etc/nixos/configuration.nix
 cat << EOF | sudo tee -a /mnt/etc/nixos/configuration.nix
@@ -176,7 +174,6 @@ cat << EOF | sudo tee -a /mnt/etc/nixos/configuration.nix
   boot.loader.efi.canTouchEfiVariables = true;
 
 EOF
-done
 }
 
 create_homeconf () {
@@ -207,11 +204,3 @@ cat << EOF | sudo tee -a /mnt/etc/nixos/home.nix
 EOF
 done
 }
-
-until mountpoints_creation; do : ; done
-
-until mount_subvolumes; do : ; done
-
-until create_mainconf; do : ; done
-
-until create_homeconf; do : ; done
