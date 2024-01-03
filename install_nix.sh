@@ -219,6 +219,71 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
   environment.systemPackages = with pkgs; [
     vim
     wget
+    btop
+    git
+    libvirt
+    swww
+    polkit_gnome
+    grim
+    slurp
+    lm_sensors
+    unzip
+    unrar
+    gnome.file-roller
+    libnotify
+    swaynotificationcenter
+    tofi
+    xfce.thunar
+    imv
+    killall
+    v4l-utils
+    # Misc
+    ydotool
+    wl-clipboard
+    socat
+    cowsay
+    lsd
+    neofetch
+    pkg-config
+    cmatrix
+    lolcat
+    transmission-gtk
+    # Photo & Video
+    mpv
+    gimp
+    obs-studio
+    blender
+    kdenlive
+    # Online
+    firefox
+    discord
+    # Dev
+    meson
+    glibc
+    hugo
+    gnumake
+    ninja
+    go
+    nodejs_21
+    godot_4
+    rustup
+    rust-analyzer
+    # Audio
+    pavucontrol
+    audacity
+    # Gaming
+    zeroad
+    xonotic
+    openra
+    # Fonts
+    font-awesome
+    symbola
+    noto-fonts-color-emoji
+    material-icons
+  ];
+
+  fonts.packages = with pkgs; [
+    (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
   ];
 
   # Steam Configuration
@@ -736,6 +801,8 @@ return 0
 # Mount the BTRFS subvolumes
 mount_subvolumes
 
+sudo nixos-install --no-root-passwd
+
 # Creating the System-Config based on the input
 generate_systemconf
 
@@ -751,5 +818,5 @@ cd ~/nix
 sudo cp -r configfiles/ /etc/
 sudo cp -r scripts/ /etc/
 
-sudo nixos-install --no-root-passwd
+sudo nixos-rebuild switch
 
