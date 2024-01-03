@@ -84,6 +84,7 @@ done
 # User choses the hostname.
 until hostname_selector; do : ; done
 
+
 # Warn user about deletion of old partition scheme.
 input_print "WARNING! This will wipe the current partition table on $DISK once installation starts. Do you agree [y/N]?: "
 read -r disk_response
@@ -109,8 +110,8 @@ ROOT="/dev/disk/by-partlabel/ROOT"
 info_print "Formatting the EFI Partition as FAT32."
 sudo mkfs.fat -F 32 "$ESP"
 
-# Formatting the LUKS Container as BTRFS.
-info_print "Formatting the LUKS container as BTRFS."
+# Mounting the root partition.
+info_print "Mounting the root partititon"
 sudo mkfs.btrfs -f "$ROOT"
 sudo mkdir -p /mnt
 sudo mount "$ROOT" /mnt
@@ -122,24 +123,45 @@ for subvol in '' "${subvols[@]}"; do
     sudo btrfs su cr /mnt/@"$subvol"
 done
 
-# Mounting the newly created subvolumes.
+until mountpoints_creation; do : ; done
+
+until mount_subvolumes; do : ; done
+
+until create_mainconf; do : ; done
+
+until create_homeconf; do : ; done
+
+mountpoints_creation () {
+# Create mountpoints.
+info_print "Creating mounting points"
+do
+  sudo umount -l /mnt
+  sudo mkdir -p /mnt/home
+  sudo mkdir -p /mnt/nix
+  sudo mkdir -p /mnt/var/log
+  sudo mkdir -p /mnt/boot
+done
+}
+
+
+mount_subvolumes () {
+# Mount subvolumes.
 info_print "Mounting the newly created subvolumes."
-sudo umount -l /mnt
-sudo mkdir -p /mnt/home
-sudo mkdir -p /mnt/nix
-sudo mkdir -p /mnt/var/log
-sudo mkdir -p /mnt/boot
+do
+  sudo mount -o compress=zstd,subvol=@root "$ROOT" /mnt
+  sudo mount -o compress=zstd,subvol=@home "$ROOT" /mnt/home
+  sudo mount -o compress=zstd,noatime,subvol=@nix "$ROOT" /mnt/nix
+  sudo mount -o compress=zstd,subvol=@log "$ROOT" /mnt/var/log
+  sudo mount "$ESP" /mnt/boot/
 
-sudo mount -o compress=zstd,subvol=@root "$ROOT" /mnt
-sudo mount -o compress=zstd,subvol=@home "$ROOT" /mnt/home
-sudo mount -o compress=zstd,noatime,subvol=@nix "$ROOT" /mnt/nix
-sudo mount -o compress=zstd,subvol=@log "$ROOT" /mnt/var/log
-sudo mount "$ESP" /mnt/boot/
+  sudo nixos-generate-config --root /mnt
+done
+}
 
-sudo nixos-generate-config --root /mnt
-
-# Installing HyprNix.
-info_print "Installing HyprNix!"
+create_mainconf () {
+# Create Configuration.nix.
+do
+info_print "Creating the main configuration.nix"
 sudo rm /mnt/etc/nixos/configuration.nix
 cat << EOF | sudo tee -a /mnt/etc/nixos/configuration.nix
 
@@ -162,3 +184,34 @@ cat << EOF | sudo tee -a /mnt/etc/nixos/configuration.nix
   boot.loader.efi.canTouchEfiVariables = true;
 
 EOF
+done
+}
+
+create_homeconf () {
+# Create Configuration.nix.
+do
+info_print "Creating the home-manager config, home.nix"
+sudo rm /mnt/etc/nixos/home.nix
+cat << EOF | sudo tee -a /mnt/etc/nixos/home.nix
+
+# Edit this configuration file to define what should be installed on
+# your system.  Help is available in the configuration.nix(5) man page
+# and in the NixOS manual (accessible by running ‘nixos-help’).
+
+{ config, pkgs, ... }:
+
+{
+  imports =
+    [   # Include the results of the hardware scan.
+        ./hardware-configuration.nix
+        # Include Home Manager
+        ./home.nix
+    ];
+
+  # Bootloader
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
+EOF
+done
+}
