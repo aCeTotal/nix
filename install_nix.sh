@@ -29,9 +29,6 @@ error_print () {
     echo -e "${BOLD}${BRED}[ ${BBLUE}•${BRED} ] $1${RESET}"
 }
 
-# Cloning the repo
-sudo git clone https://github.com/aCeTotal/nix.git
-
 # Microcode detector (function).
 microcode_detector () {
     CPU=$(grep vendor_id /proc/cpuinfo)
@@ -126,11 +123,8 @@ done
 mountpoints_creation () {
 # Create mountpoints.
 info_print "Creating mounting points"
-  sudo umount -l /mnt
-  sudo mkdir -p /mnt/home
-  sudo mkdir -p /mnt/nix
-  sudo mkdir -p /mnt/var/log
-  sudo mkdir -p /mnt/boot
+  sudo umount -l /mnt &>/dev/null
+  sudo mkdir -p /mnt/{home,nix,var/log/boot} &>/dev/null
   return 0
 }
 
@@ -138,21 +132,21 @@ info_print "Creating mounting points"
 mount_subvolumes () {
 # Mount subvolumes.
 info_print "Mounting the newly created subvolumes."
-  sudo mount -o compress=zstd,subvol=@root "$ROOT" /mnt
-  sudo mount -o compress=zstd,subvol=@home "$ROOT" /mnt/home
-  sudo mount -o compress=zstd,noatime,subvol=@nix "$ROOT" /mnt/nix
-  sudo mount -o compress=zstd,subvol=@log "$ROOT" /mnt/var/log
-  sudo mount "$ESP" /mnt/boot/
+  sudo mount -o compress=zstd,subvol=@root "$ROOT" /mnt &>/dev/null
+  sudo mount -o compress=zstd,subvol=@home "$ROOT" /mnt/home &>/dev/null
+  sudo mount -o compress=zstd,noatime,subvol=@nix "$ROOT" /mnt/nix &>/dev/null
+  sudo mount -o compress=zstd,subvol=@log "$ROOT" /mnt/var/log &>/dev/null
+  sudo mount "$ESP" /mnt/boot/ &>/dev/null
 
-  sudo nixos-generate-config --root /mnt
+  sudo nixos-generate-config --root /mnt &>/dev/null
   return 0
 }
 
 create_mainconf () {
 # Create Configuration.nix.
 info_print "Creating the main configuration.nix"
-sudo rm /mnt/etc/nixos/configuration.nix
-cat << EOF | sudo tee -a /mnt/etc/nixos/configuration.nix
+sudo rm /mnt/etc/nixos/configuration.nix &>/dev/null
+cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
 
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
@@ -179,8 +173,8 @@ return 0
 create_homeconf () {
 # Create Configuration.nix.
 info_print "Creating the home-manager config, home.nix"
-sudo rm /mnt/etc/nixos/home.nix
-cat << EOF | sudo tee -a /mnt/etc/nixos/home.nix
+sudo rm /mnt/etc/nixos/home.nix &>/dev/null
+cat << EOF | sudo tee -a "/mnt/etc/nixos/home.nix" &>/dev/null
 
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
@@ -211,3 +205,7 @@ mount_subvolumes
 create_mainconf
 
 create_homeconf
+
+# Cloning the repo
+info_print "Cloning the git repo for dotfiles (Home-manager will move them):"
+sudo git clone https://github.com/aCeTotal/nix.git &>/dev/null
