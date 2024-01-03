@@ -128,8 +128,6 @@ info_print "Creating mounting points"
   return 0
 }
 
-mount -t btrfs -o subvol=/@/@mine,defaults,nossd,user /dev/sdd2   /home/me/bulk
-
 mount_subvolumes () {
 # Mount subvolumes.
 info_print "Mounting the newly created subvolumes."
