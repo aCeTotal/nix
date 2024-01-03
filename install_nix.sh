@@ -132,14 +132,15 @@ info_print "Creating mounting points"
   return 0
 }
 
+mount -t btrfs -o subvol=/@/@mine,defaults,nossd,user /dev/sdd2   /home/me/bulk
 
 mount_subvolumes () {
 # Mount subvolumes.
 info_print "Mounting the newly created subvolumes."
-  sudo mount -o compress=zstd,subvol=@root "$ROOT" /mnt
-  sudo mount -o compress=zstd,subvol=@home "$ROOT" /mnt/home
-  sudo mount -o compress=zstd,noatime,subvol=@nix "$ROOT" /mnt/nix
-  sudo mount -o compress=zstd,subvol=@log "$ROOT" /mnt/var/log
+  sudo mount -t btrfs -o subvol=@root,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt
+  sudo mount -t btrfs -o subvol=@home,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/home
+  sudo mount -t btrfs -o subvol=@nix,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/nix
+  sudo mount -t btrfs -o subvol=@log,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/var/log
   sudo mount "$ESP" /mnt/boot/
 
   sudo nixos-generate-config --root /mnt
@@ -204,7 +205,7 @@ return 0
 
 mountpoints_creation
 
-sleep 2
+sleep
 
 mount_subvolumes
 
