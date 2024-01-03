@@ -52,6 +52,21 @@ hostname_selector () {
     return 0
 }
 
+# User enters a hostname (function).
+username_selector () {
+    input_print "Please enter the name of your user: "
+    read -r username
+    if [[ -z "$username" ]]; then
+        error_print "You need to enter a username in order to continue!"
+        return 1
+    fi
+    info_print "Oh! Hi, $username! Welcome to the world of NixOS!"
+    sleep 4
+    info_print "Let't continue :)"
+    sleep 2
+    return 0
+}
+
 # Welcome screen.
 echo -ne "${BOLD}${BYELLOW}
 ======================================================================
@@ -80,6 +95,9 @@ done
 
 # User choses the hostname.
 until hostname_selector; do : ; done
+
+# User choses the hostname.
+until husername_selector; do : ; done
 
 
 # Warn user about deletion of old partition scheme.
@@ -140,7 +158,7 @@ generate_systemconf () {
 info_print "Generating the system config / configuration.nix"
 sudo rm /mnt/etc/nixos/configuration.nix &>/dev/null
 
-timezone="curl http://ip-api.com/line?fields=timezone"
+timezone=curl http://ip-api.com/line?fields=timezone
 
 cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
 
