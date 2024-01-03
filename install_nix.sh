@@ -204,7 +204,9 @@ return 0
 
 mountpoints_creation
 
-#mount_subvolumes
+sleep 2
+
+mount_subvolumes
 
 create_mainconf
 
