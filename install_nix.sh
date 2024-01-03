@@ -134,9 +134,9 @@ info_print "Creating mounting points"
   return 0
 }
 
-until mount_subvolumes; do : ; done
-until create_mainconf; do : ; done
-until create_homeconf; do : ; done
+mount_subvolumes
+create_mainconf
+create_homeconf
 
 
 mount_subvolumes () {
