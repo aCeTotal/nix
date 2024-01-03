@@ -124,7 +124,7 @@ mountpoints_creation () {
 # Create mountpoints.
 info_print "Creating mounting points"
   sudo umount -l /mnt &>/dev/null
-  sudo mkdir -p /mnt/{home,nix,var/log/boot} &>/dev/null
+  sudo mkdir -p /mnt/{home,nix,var/log,boot}
   return 0
 }
 
