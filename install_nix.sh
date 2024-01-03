@@ -131,7 +131,9 @@ info_print "Creating mounting points"
 mount_subvolumes () {
 # Mount subvolumes.
 info_print "Mounting the newly created subvolumes."
+  sudo umount -l /mnt
   sudo mount -t btrfs -o subvol=root,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt
+  sudo mkdir -p /mnt/{home,nix,var/log,boot}
   sudo mount -t btrfs -o subvol=home,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/home
   sudo mount -t btrfs -o subvol=nix,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/nix
   sudo mount -t btrfs -o subvol=log,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/var/log
@@ -197,9 +199,7 @@ EOF
 return 0
 }
 
-mountpoints_creation
-
-sleep
+#mountpoints_creation
 
 mount_subvolumes
 
