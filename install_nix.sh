@@ -134,11 +134,12 @@ info_print "Creating mounting points"
   return 0
 }
 
+until mount_subvolumes; do : ; done
+
 
 mount_subvolumes () {
 # Mount subvolumes.
 info_print "Mounting the newly created subvolumes."
-do
   sudo mount -o compress=zstd,subvol=@root "$ROOT" /mnt
   sudo mount -o compress=zstd,subvol=@home "$ROOT" /mnt/home
   sudo mount -o compress=zstd,noatime,subvol=@nix "$ROOT" /mnt/nix
@@ -146,7 +147,7 @@ do
   sudo mount "$ESP" /mnt/boot/
 
   sudo nixos-generate-config --root /mnt
-done
+  return 0
 }
 
 create_mainconf () {
@@ -174,11 +175,11 @@ cat << EOF | sudo tee -a /mnt/etc/nixos/configuration.nix
   boot.loader.efi.canTouchEfiVariables = true;
 
 EOF
+return 0
 }
 
 create_homeconf () {
 # Create Configuration.nix.
-do
 info_print "Creating the home-manager config, home.nix"
 sudo rm /mnt/etc/nixos/home.nix
 cat << EOF | sudo tee -a /mnt/etc/nixos/home.nix
@@ -202,5 +203,5 @@ cat << EOF | sudo tee -a /mnt/etc/nixos/home.nix
   boot.loader.efi.canTouchEfiVariables = true;
 
 EOF
-done
+return 0
 }
