@@ -97,7 +97,7 @@ done
 until hostname_selector; do : ; done
 
 # User choses the hostname.
-until husername_selector; do : ; done
+until username_selector; do : ; done
 
 
 # Warn user about deletion of old partition scheme.
