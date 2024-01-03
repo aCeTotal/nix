@@ -137,11 +137,11 @@ mount -t btrfs -o subvol=/@/@mine,defaults,nossd,user /dev/sdd2   /home/me/bulk
 mount_subvolumes () {
 # Mount subvolumes.
 info_print "Mounting the newly created subvolumes."
-  sudo mount -t btrfs -o subvol=@root,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt
-  sudo mount -t btrfs -o subvol=@home,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/home
-  sudo mount -t btrfs -o subvol=@nix,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/nix
-  sudo mount -t btrfs -o subvol=@log,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/var/log
-  sudo mount "$ESP" /mnt/boot/
+  mount -t btrfs -o subvol=@root,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt
+  mount -t btrfs -o subvol=@home,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/home
+  mount -t btrfs -o subvol=@nix,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/nix
+  mount -t btrfs -o subvol=@log,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt/var/log
+  mount "$ESP" /mnt/boot/
 
   sudo nixos-generate-config --root /mnt
   return 0
