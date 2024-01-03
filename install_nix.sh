@@ -124,6 +124,8 @@ mountpoints_creation () {
 # Create mountpoints.
 info_print "Creating mounting points"
   sudo umount -l /mnt
+  sudo mkdir -p /mnt/uhfuh
+  sudo mkdir -p /mnt/uhfuh555
   sudo mkdir -p /mnt/{home,nix,var/log,boot}
   sudo mkdir -p /mnt/uhfuh
   sudo mkdir -p /mnt/uhfuh555
@@ -134,13 +136,13 @@ info_print "Creating mounting points"
 mount_subvolumes () {
 # Mount subvolumes.
 info_print "Mounting the newly created subvolumes."
-  sudo mount -o compress=zstd,subvol=@root "$ROOT" /mnt &>/dev/null
-  sudo mount -o compress=zstd,subvol=@home "$ROOT" /mnt/home &>/dev/null
-  sudo mount -o compress=zstd,noatime,subvol=@nix "$ROOT" /mnt/nix &>/dev/null
-  sudo mount -o compress=zstd,subvol=@log "$ROOT" /mnt/var/log &>/dev/null
-  sudo mount "$ESP" /mnt/boot/ &>/dev/null
+  sudo mount -o compress=zstd,subvol=@root "$ROOT" /mnt
+  sudo mount -o compress=zstd,subvol=@home "$ROOT" /mnt/home
+  sudo mount -o compress=zstd,noatime,subvol=@nix "$ROOT" /mnt/nix
+  sudo mount -o compress=zstd,subvol=@log "$ROOT" /mnt/var/log
+  sudo mount "$ESP" /mnt/boot/
 
-  sudo nixos-generate-config --root /mnt &>/dev/null
+  sudo nixos-generate-config --root /mnt
   return 0
 }
 
