@@ -123,11 +123,6 @@ for subvol in '' "${subvols[@]}"; do
     sudo btrfs su cr /mnt/@"$subvol"
 done
 
-mountpoints_creation
-mount_subvolumes
-create_mainconf
-create_homeconf
-
 mountpoints_creation () {
 # Create mountpoints.
 info_print "Creating mounting points"
@@ -208,3 +203,11 @@ cat << EOF | sudo tee -a /mnt/etc/nixos/home.nix
 EOF
 return 0
 }
+
+mountpoints_creation
+
+mount_subvolumes
+
+create_mainconf
+
+create_homeconf
