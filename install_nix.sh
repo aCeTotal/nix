@@ -131,7 +131,7 @@ info_print "Creating mounting points"
   sudo mkdir -p /mnt/nix
   sudo mkdir -p /mnt/var/log
   sudo mkdir -p /mnt/boot
-done
+  return 0
 }
 
 
