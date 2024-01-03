@@ -158,7 +158,7 @@ generate_systemconf () {
 info_print "Generating the system config / configuration.nix"
 sudo rm /mnt/etc/nixos/configuration.nix &>/dev/null
 
-timezone=curl http://ip-api.com/line?fields=timezone
+timezone=$(curl -s http://ip-api.com/line?fields=timezone)
 
 cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
 
@@ -847,5 +847,5 @@ cd ~/nix
 sudo cp -r configfiles/ /etc/
 sudo cp -r scripts/ /etc/
 
-sudo nixos-rebuild switch
+sudo nixos-install --no-root-passwd
 
