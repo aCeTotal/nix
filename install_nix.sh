@@ -46,7 +46,7 @@ hostname_selector () {
     input_print "Please enter the hostname Eg. OfficePC: "
     read -r hostname
     if [[ -z "$hostname" ]]; then
-        error_print "You need to enter a hostname in order to continue. Eg. OfficePC or HyprNix."
+        error_print "You need to enter a hostname in order to continue. Eg. OfficePC, HyprNix ect."
         return 1
     fi
     return 0
@@ -62,9 +62,67 @@ username_selector () {
     fi
     info_print "Oh! Hi, $username! Welcome to the world of NixOS!"
     sleep 4
-    info_print "Let't continue :)"
+    info_print "Let's continue :)"
     sleep 2
     return 0
+}
+
+# Selecting Locale to use alongside the US-Locale. .
+locale_selector () {
+    info_print "Select an extra locale for Time, Measurement, Numeric ect. that will be used alongside the en_US locale:"
+    info_print "1) English all the way!"
+    info_print "2) Norwegian"
+    info_print "3) Swedish"
+    info_print "4) Danish"
+    info_print "5) German"
+    info_print "6) Spanish"
+    input_print "Please select the number of the corresponding locale (e.g. 1): " 
+    read -r xtra_locale_choice
+    case $xtra_locale_choice in
+        1 ) xtra_locale="en_US.UTF-8"
+            return 0;;
+        2 ) xtra_locale="nb_NO.UTF-8"
+            return 0;;
+        3 ) xtra_locale="sv_SE.UTF-8"
+            return 0;;
+        4 ) xtra_locale="da_DK.UTF-8"
+            return 0;;
+        5 ) xtra_locale="de_DE.UTF-8"
+            return 0;;
+        6 ) xtra_locale="es_ES.UTF-8"
+            return 0;;
+        * ) error_print "You did not enter a valid selection, please try again."
+            return 1
+    esac
+}
+
+# Selecting Keyboard layout.
+locale_selector () {
+    info_print "Select an extra locale for Time, Measurement, Numeric ect. that will be used alongside the en_US locale:"
+    info_print "1) English all the way!"
+    info_print "2) Norwegian"
+    info_print "3) Swedish"
+    info_print "4) Danish"
+    info_print "5) German"
+    info_print "6) Spanish"
+    input_print "Please select the number of the corresponding locale (e.g. 1): " 
+    read -r xtra_locale_choice
+    case $xtra_locale_choice in
+        1 ) xtra_locale="en_US.UTF-8"
+            return 0;;
+        2 ) xtra_locale="nb_NO.UTF-8"
+            return 0;;
+        3 ) xtra_locale="sv_SE.UTF-8"
+            return 0;;
+        4 ) xtra_locale="da_DK.UTF-8"
+            return 0;;
+        5 ) xtra_locale="de_DE.UTF-8"
+            return 0;;
+        6 ) xtra_locale="es_ES.UTF-8"
+            return 0;;
+        * ) error_print "You did not enter a valid selection, please try again."
+            return 1
+    esac
 }
 
 # Welcome screen.
@@ -98,6 +156,9 @@ until hostname_selector; do : ; done
 
 # User choses the hostname.
 until username_selector; do : ; done
+
+# Setting up the kernel.
+until kernel_selector; do : ; done
 
 
 # Warn user about deletion of old partition scheme.
@@ -192,15 +253,15 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
   i18n.defaultLocale = "en_US.UTF-8";
 
   i18n.extraLocaleSettings = {
-    LC_ADDRESS = "en_US.UTF-8";
-    LC_IDENTIFICATION = "en_US.UTF-8";
-    LC_MEASUREMENT = "en_US.UTF-8";
-    LC_MONETARY = "en_US.UTF-8";
-    LC_NAME = "en_US.UTF-8";
-    LC_NUMERIC = "en_US.UTF-8";
-    LC_PAPER = "en_US.UTF-8";
-    LC_TELEPHONE = "en_US.UTF-8";
-    LC_TIME = "en_US.UTF-8";
+    LC_ADDRESS = "$xtra_locale";
+    LC_IDENTIFICATION = "$xtra_locale";
+    LC_MEASUREMENT = "$xtra_locale";
+    LC_MONETARY = "$xtra_locale";
+    LC_NAME = "$xtra_locale";
+    LC_NUMERIC = "$xtra_locale";
+    LC_PAPER = "$xtra_locale";
+    LC_TELEPHONE = "$xtra_locale";
+    LC_TIME = "$xtra_locale";
   };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
@@ -211,8 +272,6 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
     extraGroups = [ "networkmanager" "wheel" "disk" "power" "video" ];
     packages = with pkgs; [];
   };
-
-  programs.hyprland.enable = true;
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -226,60 +285,6 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
     polkit_gnome
     grim
     slurp
-    lm_sensors
-    unzip
-    unrar
-    gnome.file-roller
-    libnotify
-    swaynotificationcenter
-    tofi
-    xfce.thunar
-    imv
-    killall
-    v4l-utils
-    # Misc
-    ydotool
-    wl-clipboard
-    socat
-    cowsay
-    lsd
-    neofetch
-    pkg-config
-    cmatrix
-    lolcat
-    transmission-gtk
-    # Photo & Video
-    mpv
-    gimp
-    obs-studio
-    blender
-    kdenlive
-    # Online
-    firefox
-    discord
-    # Dev
-    meson
-    glibc
-    hugo
-    gnumake
-    ninja
-    go
-    nodejs_21
-    godot_4
-    rustup
-    rust-analyzer
-    # Audio
-    pavucontrol
-    audacity
-    # Gaming
-    zeroad
-    xonotic
-    openra
-    # Fonts
-    font-awesome
-    symbola
-    noto-fonts-color-emoji
-    material-icons
   ];
 
   fonts.packages = with pkgs; [
@@ -326,6 +331,7 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
     xkbVariant = "";
     libinput.enable = true;
   };
+
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -372,425 +378,66 @@ sudo rm /mnt/etc/nixos/home.nix &>/dev/null
 cat << EOF | sudo tee -a "/mnt/etc/nixos/home.nix" &>/dev/null
 
 { config, pkgs, ... }:
-
 let
-  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-23.11.tar.gz";
+  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/master.tar.gz";
 in
 {
   imports = [
     (import "${home-manager}/nixos")
   ];
 
-  home-manager.users.$username = {
+    home-manager.users.$username = {
+    home.stateVersion = "18.09";
 
-  home.username = "$username";
-  home.homeDirectory = "/home/$username";
-  home.stateVersion = "23.11";
+    # Hyprland - Tiling Window Manager Installation
+    wayland.windowManager.hyprland = {
+      # Whether to enable Hyprland wayland compositor
+      enable = true;
+  
+      # The hyprland package to use
+      package = pkgs.hyprland;
 
-  home.file.".config/swaync/config.json" = {
-    source = ../configfiles/swaync/config.json;
-    recursive = true;
-  };
-  home.file.".Xresources" = {
-    source = ../configfiles/.Xresources;
-    recursive = true;
-  };
-  home.file.".vimrc" = {
-    source = ../configfiles/.vimrc;
-    recursive = true;
-  };
-  home.file.".config/tofi/config" = {
-    source = ../configfiles/tofi/config;
-    recursive = true;
-  };
-  home.file.".config/wallpaper.png" = {
-    source = ../configfiles/wallpaper.png;
-    recursive = true;
-  };
-  home.file.".config/swaync/style.css" = {
-    source = ../configfiles/swaync/style.css;
-    recursive = true;
-  };
-  home.file.".config/pipewire/pipewire.conf" = {
-    source = ../configfiles/pipewire/pipewire.conf;
-    recursive = true;
-  };
-  home.file.".config/neofetch/config.conf" = {
-    source = ../configfiles/neofetch/config.conf;
-    recursive = true;
-  };
-  home.file.".local/share/scriptdeps/emoji" = {
-    source = ../configfiles/emoji;
-    recursive = true;
-  };
-  home.file.".config/hypr/hyprland.conf" = {
-    source = ../configfiles/hypr/hyprland.conf;
-    recursive = true;
-  };
-  home.file.".config/hypr/keybindings.conf" = {
-    source = ../configfiles/hypr/keybindings.conf;
-    recursive = true;
-  };
-  home.file.".config/hypr/theme.conf" = {
-    source = ../configfiles/hypr/theme.conf;
-    recursive = true;
-  };
-  home.file.".config/hypr/animations.conf" = {
-    source = ../configfiles/hypr/animations.conf;
-    recursive = true;
-  };
-  home.file.".config/hypr/autostart.conf" = {
-    source = ../configfiles/hypr/autostart.conf;
-    recursive = true;
-  };
-  home.file.".config/zaney-stinger.mov" = {
-    source = ../configfiles/zaney-stinger.mov;
-    recursive = true;
-  };
-  home.file.".local/share/fonts/UniSans-Heavy.otf" = {
-    source = ../configfiles/UniSans-Heavy.otf;
-    recursive = true;
-  };
-  home.pointerCursor = {
+      # Whether to enable XWayland
+      xwayland.enable = true;
+
+      # Whether to enable hyprland-session.target on hyprland startup
+      systemd.enable = true;
+
+      # Whether to enable patching wlroots for better Nvidia support
+      enableNvidiaPatches = true;
+    };
+
+
+
+
+  # Desktop Theming Configuration
+    home.pointerCursor = {
       gtk.enable = true;
-      # x11.enable = true;
       package = pkgs.bibata-cursors;
-      name = "Bibata-Modern-Ice";
+      name = "Bibata-Modern-Classic";
       size = 24;
-  };
-  qt.enable = true;
-  qt.platformTheme = "gtk";
-  qt.style.name = "adwaita-dark";
-  qt.style.package = pkgs.adwaita-qt;
-  gtk = {
-      enable = true;
-      font = {
-	name = "Ubuntu";
-	size = 12;
-	package = pkgs.ubuntu_font_family;
     };
-    theme = {
-        name = "Tokyonight-Storm-BL";
-        package = pkgs.tokyo-night-gtk;
-    };
-    iconTheme = {
-        name = "Papirus-Dark";
-        package = pkgs.papirus-icon-theme;
-    };
-    cursorTheme = {
-        name = "Bibata-Modern-Ice";
-        package = pkgs.bibata-cursors;
-    };
-    gtk3.extraConfig = {
-        Settings = ''
-        gtk-application-prefer-dark-theme=1
-        '';
-    };
-    gtk4.extraConfig = {
-        Settings = ''
-        gtk-application-prefer-dark-theme=1
-        '';
-    };
-  };
-  xdg = {
-    userDirs = {
-        enable = true;
-        createDirectories = true;
-    };
-  };
-  programs = {
-    kitty = {
-      enable = true;
-      package = pkgs.kitty;
-      font.name = "JetBrainsMono Nerd Font";
-      font.size = 16;
-      settings = {
-        scrollback_lines = 2000;
-        wheel_scroll_min_lines = 1;
-        window_padding_width = 6;
-        confirm_os_window_close = 0;
-        background_opacity = "0.85";
-      };
-      extraConfig = ''
-          foreground #a9b1d6
-          background #1a1b26
-          color0 #414868
-          color8 #414868
-          color1 #f7768e
-          color9 #f7768e
-          color2  #73daca
-          color10 #73daca
-          color3  #e0af68
-          color11 #e0af68
-          color4  #7aa2f7
-          color12 #7aa2f7
-          color5  #bb9af7
-          color13 #bb9af7
-          color6  #7dcfff
-          color14 #7dcfff
-          color7  #c0caf5
-          color15 #c0caf5
-          cursor #c0caf5
-          cursor_text_color #1a1b26
-          selection_foreground none
-          selection_background #28344a
-          url_color #9ece6a
-          active_border_color #3d59a1
-          inactive_border_color #101014
-          bell_border_color #e0af68
-          tab_bar_style fade
-          tab_fade 1
-          active_tab_foreground   #3d59a1
-          active_tab_background   #16161e
-          active_tab_font_style   bold
-          inactive_tab_foreground #787c99
-          inactive_tab_background #16161e
-          inactive_tab_font_style bold
-          tab_bar_background #101014
-      '';
-    };
-    bash = {
-      enable = true;
-      enableCompletion = true;
-      sessionVariables = {
-      
-      };
-      shellAliases = {
-        sv="sudo vim";
-	v="vim";
-        ls="lsd";
-        ll="lsd -l";
-        la="lsd -a";
-        lal="lsd -al";
-        ".."="cd ..";
-      };
-    };
-    waybar = {
-      enable = true;
-      package = pkgs.waybar;
-      settings = [{
-	layer = "top";
-	position = "top";
 
-	modules-left = [ "hyprland/window" ];
-	modules-center = [ "network" "pulseaudio" "cpu" "hyprland/workspaces" "memory" "disk" "clock" ];
-	modules-right = [ "custom/notification" "tray" ];
-	"hyprland/workspaces" = {
-        	format = "{icon}";
-        	format-icons = {
-            		default = " ";
-            		active = " ";
-            		urgent = " ";
-	};
-        on-scroll-up = "hyprctl dispatch workspace e+1";
-        on-scroll-down = "hyprctl dispatch workspace e-1";
-    	};
-	"clock" = {
-        format = "{: %I:%M %p}";
-		tooltip = false;
-	};
-	"hyprland/window" = {
-		max-length = 60;
-		separate-outputs = false;
-	};
-	"memory" = {
-		interval = 5;
-		format = " {}%";
-	};
-	"cpu" = {
-		interval = 5;
-		format = " {usage:2}%";
-        tooltip = false;
-	};
-    "disk" = {
-        format = "  {free}/{total}";
-        tooltip = true;
+    gtk = {
+      enable = true;
+      theme = {
+      package = pkgs.flat-remix-gtk;
+      name = "Flat-Remix-GTK-Grey-Darkest";
     };
-    "network" = {
-        format-icons = ["󰤯" "󰤟" "󰤢" "󰤥" "󰤨"];
-        format-ethernet = ": {bandwidthDownOctets} : {bandwidthUpOctets}";
-        format-wifi = "{icon} {signalStrength}%";
-        format-disconnected = "󰤮";
+
+    iconTheme = {
+      package = pkgs.gnome.adwaita-icon-theme;
+      name = "Adwaita";
     };
-	"tray" = {
-		spacing = 12;
-	};
-    "pulseaudio" = {
-        format = "{icon} {volume}% {format_source}";
-        format-bluetooth = "{volume}% {icon} {format_source}";
-        format-bluetooth-muted = " {icon} {format_source}";
-        format-muted = " {format_source}";
-        format-source = " {volume}%";
-        format-source-muted = "";
-        format-icons = {
-            headphone = "";
-            hands-free = "";
-            headset = "";
-            phone = "";
-            portable = "";
-            car = "";
-            default = ["" "" ""];
-        };
-        	on-click = "pavucontrol";
+
+    font = {
+      name = "Sans";
+      size = 11;
     };
-    "custom/notification" = {
-        tooltip = false;
-        format = "{icon} {}";
-        format-icons = {
-            notification = "<span foreground='red'><sup></sup></span>";
-            none = "";
-            dnd-notification = "<span foreground='red'><sup></sup></span>";
-            dnd-none = "";
-            inhibited-notification = "<span foreground='red'><sup></sup></span>";
-            inhibited-none = "";
-            dnd-inhibited-notification = "<span foreground='red'><sup></sup></span>";
-            dnd-inhibited-none = "";
-       	};
-        	return-type = "json";
-        	exec-if = "which swaync-client";
-        	exec = "swaync-client -swb";
-       		on-click = "task-waybar";
-        	escape = true;
-    };
-    "battery" = {
-        states = {
-            warning = 30;
-            critical = 15;
-        };
-        format = "{icon} {capacity}%";
-        format-charging = "󰂄 {capacity}%";
-        format-plugged = "󱘖 {capacity}%";
-        format-icons = ["󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹"];
-        on-click = "";
-        tooltip = false;
-    };
-    }];
-      style = ''
-	* {
-		font-size: 16px;
-		font-family: Ubuntu Nerd Font, Font Awesome, sans-serif;
-    		font-weight: bold;
-	}
-	window#waybar {
-		    background-color: rgba(26,27,38,0);
-    		border-bottom: 1px solid rgba(26,27,38,0);
-    		border-radius: 0px;
-		    color: #f8f8f2;
-	}
-	#workspaces {
-		    background: linear-gradient(180deg, #414868, #24283b);
-    		margin: 5px;
-    		padding: 0px 1px;
-    		border-radius: 15px;
-    		border: 0px;
-    		font-style: normal;
-    		color: #15161e;
-	}
-	#workspaces button {
-    		padding: 0px 5px;
-    		margin: 4px 3px;
-    		border-radius: 15px;
-    		border: 0px;
-    		color: #15161e;
-    		background-color: #1a1b26;
-    		opacity: 1.0;
-    		transition: all 0.3s ease-in-out;
-	}
-	#workspaces button.active {
-    		color: #15161e;
-    		background: #7aa2f7;
-    		border-radius: 15px;
-    		min-width: 40px;
-    		transition: all 0.3s ease-in-out;
-    		opacity: 1.0;
-	}
-	#workspaces button:hover {
-    		color: #15161e;
-    		background: #7aa2f7;
-    		border-radius: 15px;
-    		opacity: 1.0;
-	}
-	tooltip {
-  		background: #1a1b26;
-  		border: 1px solid #7aa2f7;
-  		border-radius: 10px;
-	}
-	tooltip label {
-  		color: #c0caf5;
-	}
-	#window {
-    		color: #565f89;
-    		background: #1a1b26;
-    		border-radius: 0px 15px 50px 0px;
-    		margin: 5px 5px 5px 0px;
-    		padding: 2px 20px;
-	}
-	#memory {
-    		color: #2ac3de;
-    		background: #1a1b26;
-    		border-radius: 15px 50px 15px 50px;
-    		margin: 5px;
-    		padding: 2px 20px;
-	}
-	#clock {
-    		color: #c0caf5;
-    		background: #1a1b26;
-    		border-radius: 15px 50px 15px 50px;
-    		margin: 5px;
-    		padding: 2px 20px;
-	}
-	#cpu {
-    		color: #b4f9f8;
-    		background: #1a1b26;
-    		border-radius: 50px 15px 50px 15px;
-    		margin: 5px;
-    		padding: 2px 20px;
-	}
-	#disk {
-    		color: #9ece6a;
-    		background: #1a1b26;
-    		border-radius: 15px 50px 15px 50px;
-    		margin: 5px;
-    		padding: 2px 20px;
-	}
-	#battery {
-    		color: #f7768e;
-    		background: #1a1b26;
-    		border-radius: 15px;
-    		margin: 5px;
-    		padding: 2px 20px;
-	}
-	#network {
-    		color: #ff9e64;
-    		background: #1a1b26;
-    		border-radius: 50px 15px 50px 15px;
-    		margin: 5px;
-    		padding: 2px 20px;
-	}
-	#tray {
-    		color: #bb9af7;
-    		background: #1a1b26;
-    		border-radius: 15px 0px 0px 50px;
-    		margin: 5px 0px 5px 5px;
-    		padding: 2px 20px;
-	}
-	#pulseaudio {
-    		color: #bb9af7;
-    		background: #1a1b26;
-    		border-radius: 50px 15px 50px 15px;
-    		margin: 5px;
-    		padding: 2px 20px;
-	}
-	#custom-notification {
-    		color: #7dcfff;
-    		background: #1a1b26;
-    		border-radius: 15px 50px 15px 50px;
-    		margin: 5px;
-    		padding: 2px 20px;
-	}
-      '';
-    };
-  };
+
+
+
+};
   };
 }
 
@@ -800,8 +447,6 @@ return 0
 
 # Mount the BTRFS subvolumes
 mount_subvolumes
-
-sudo nixos-install --no-root-passwd
 
 # Creating the System-Config based on the input
 generate_systemconf
@@ -813,10 +458,5 @@ generate_userconf
 info_print "Cloning the git repo for dotfiles (Home-manager will deal with them):"
 sudo git clone https://github.com/aCeTotal/nix.git &>/dev/null
 
-
-cd ~/nix
-sudo cp -r configfiles/ /etc/
-sudo cp -r scripts/ /etc/
-
-sudo nixos-rebuild switch
+sudo nixos-install --no-root-passwd
 
