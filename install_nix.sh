@@ -182,27 +182,21 @@ info_print "Creating mountpoints and mounting the newly created subvolumes."
   return 0
 }
 
-generate_systemconf () {
+generate_preconf () {
 # Generates system config | Configuration.nix.
-info_print "Generating the system config / configuration.nix"
+info_print "Generating the pre system conf"
 sudo rm /mnt/etc/nixos/configuration.nix &>/dev/null
 
 timezone=$(curl -s http://ip-api.com/line?fields=timezone)
 
 cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
 
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ config, pkgs, ... }:
+{ pkgs, lib, inputs, ... }:
 
 {
   imports =
     [   # Include the results of the hardware scan.
         ./hardware-configuration.nix
-        # Include Home Manager
-        ./home.nix
     ];
 
   # Bootloader
@@ -210,12 +204,11 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.efi.efiSysMountPoint = "/boot";
 
-  # Installs Intel/AMD Microcode
-  $microcode
-
   # Networking
   networking.networkmanager.enable = true;
   networking.hostName = "$hostname"; # Define your hostname.
+
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Set your time zone.
   time.timeZone = "$timezone";
@@ -242,6 +235,89 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
     description = "";
     extraGroups = [ "networkmanager" "wheel" "disk" "power" "video" ];
     packages = with pkgs; [];
+  };
+
+  # List packages installed in system profile. To search, run:
+  # $ nix search wget
+  environment.systemPackages = with pkgs; [
+    vim
+    wget
+    git
+  ];
+
+  system.stateVersion = "23.11";
+
+}
+
+EOF
+return 0
+}
+
+generate_systemconf () {
+# Generates system config | Configuration.nix.
+info_print "Generating the system config / configuration.nix"
+sudo rm /mnt/etc/nixos/configuration.nix &>/dev/null
+
+timezone=$(curl -s http://ip-api.com/line?fields=timezone)
+
+cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
+
+{ pkgs, lib, inputs, ... }:
+
+{
+  imports =
+    [   # Include the results of the hardware scan.
+        ./hardware-configuration.nix
+        # Include Home Manager
+        inputs.home-manager.nixosModules.default
+    ];
+
+  # Bootloader
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.efi.efiSysMountPoint = "/boot";
+
+  # Installs Intel/AMD Microcode
+  $microcode
+
+  # Networking
+  networking.networkmanager.enable = true;
+  networking.hostName = "$hostname"; # Define your hostname.
+
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  # Set your time zone.
+  time.timeZone = "$timezone";
+
+  # Select internationalisation properties.
+  i18n.defaultLocale = "en_US.UTF-8";
+
+  i18n.extraLocaleSettings = {
+    LC_ADDRESS = "$xtra_locale";
+    LC_IDENTIFICATION = "$xtra_locale";
+    LC_MEASUREMENT = "$xtra_locale";
+    LC_MONETARY = "$xtra_locale";
+    LC_NAME = "$xtra_locale";
+    LC_NUMERIC = "$xtra_locale";
+    LC_PAPER = "$xtra_locale";
+    LC_TELEPHONE = "$xtra_locale";
+    LC_TIME = "$xtra_locale";
+  };
+
+  # Define a user account. Don't forget to set a password with ‘passwd’.
+  users.users.$username = {
+    isNormalUser = true;
+    initialPassword = "nixos";
+    description = "";
+    extraGroups = [ "networkmanager" "wheel" "disk" "power" "video" ];
+    packages = with pkgs; [];
+  };
+
+  home-manager = {
+    extraSpecialArgs = { inherit inputs; };
+    users = {
+      "$username" = import ./home.nix
+    };
   };
 
   # List packages installed in system profile. To search, run:
@@ -349,15 +425,8 @@ sudo rm /mnt/etc/nixos/home.nix &>/dev/null
 cat << EOF | sudo tee -a "/mnt/etc/nixos/home.nix" &>/dev/null
 
 { config, pkgs, ... }:
-let
-  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-23.11.tar.gz";
-in
-{
-  imports = [
-    (import "${home-manager}/nixos")
-  ];
 
-    home-manager.users.$username = {
+{
 
       home.username = "$username";
       home.homeDirectory = "/home/$username";
@@ -412,8 +481,6 @@ in
 
 
 };
-  };
-}
 
 EOF
 return 0
@@ -422,15 +489,15 @@ return 0
 # Mount the BTRFS subvolumes
 mount_subvolumes
 
-# Creating the System-Config based on the input
-generate_systemconf
-
-# Creating the User-Config based on the input
-generate_userconf
-
-# Cloning the repo
-info_print "Cloning the git repo for dotfiles (Home-manager will deal with them):"
-sudo git clone https://github.com/aCeTotal/nix.git &>/dev/null
+generate_preconf
 
 sudo nixos-install --no-root-passwd
+
+generate_systemconf
+
+generate_userconf
+
+sudo nix flake init --template github:aCeTotal/nix
+
+sudo nixos-rebuild switch --flake /etc/nixos#default
 
