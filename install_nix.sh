@@ -46,10 +46,11 @@ hostname_selector () {
         error_print "You need to enter a hostname in order to continue. Eg. OfficePC, HyprNix ect."
         return 1
     fi
+    echo
     return 0
 }
 
-# User enters a hostname (function).
+# User enters a username (function).
 username_selector () {
     input_print "Please enter the name of your user: "
     read -r username
@@ -61,6 +62,7 @@ username_selector () {
     sleep 4
     info_print "Let's continue :)"
     sleep 2
+    echo
     return 0
 }
 
@@ -91,6 +93,7 @@ locale_selector () {
         * ) error_print "You did not enter a valid selection, please try again."
             return 1
     esac
+    echo
 }
 
 # Welcome screen.
@@ -119,16 +122,6 @@ do
     break
 done
 
-# User choses the hostname.
-until hostname_selector; do : ; done
-
-# User choses the hostname.
-until username_selector; do : ; done
-
-# User choses if he wants an xtra locale alongside en_US.
-until locale_selector; do : ; done
-
-
 # Warn user about deletion of old partition scheme.
 input_print "WARNING! This WILL wipe the current partition table on $DISK. Do you agree [y/N]?: "
 read -r disk_response
@@ -139,6 +132,15 @@ fi
 info_print "Wiping $DISK."
 sudo wipefs -af "$DISK" &>/dev/null
 sudo sgdisk -Zo "$DISK" &>/dev/null
+
+# User choses the hostname.
+until hostname_selector; do : ; done
+
+# User choses the hostname.
+until username_selector; do : ; done
+
+# User choses if he wants an xtra locale alongside en_US.
+until locale_selector; do : ; done
 
 # Creating a new partition scheme.
 info_print "Creating the partitions on $DISK."
@@ -179,6 +181,7 @@ info_print "Creating mountpoints and mounting the newly created subvolumes."
 
   info_print "Generating the hardware-config / hardware-configuration.nix"
   sudo nixos-generate-config --root /mnt
+  echo
   return 0
 }
 
@@ -505,5 +508,5 @@ generate_userconf
 cd /mnt/etc/nixos
 sudo nix flake init --template github:aCeTotal/nix --extra-experimental-features nix-command --extra-experimental-features flakes
 
-sudo nixos-rebuild switch --flake
+sudo nixos-rebuild switch --flake /mnt/etc/nixos#default
 
