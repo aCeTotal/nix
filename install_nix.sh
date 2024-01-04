@@ -502,7 +502,8 @@ generate_systemconf
 
 generate_userconf
 
-cd cd /mnt/etc/nixos && sudo nix flake init --template github:aCeTotal/nix --extra-experimental-features nix-command --extra-experimental-features flakes
+cd /mnt/etc/nixos
+sudo nix flake init --template github:aCeTotal/nix --extra-experimental-features nix-command --extra-experimental-features flakes
 
 sudo nixos-rebuild switch --flake
 
