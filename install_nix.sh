@@ -208,7 +208,12 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
   networking.networkmanager.enable = true;
   networking.hostName = "$hostname"; # Define your hostname.
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix = {
+    package = pkgs.nixFlakes;
+    extraOptions = ''
+    experimental-features = nix-command flakes
+    '';
+  };
 
   # Set your time zone.
   time.timeZone = "$timezone";
