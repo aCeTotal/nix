@@ -497,7 +497,7 @@ generate_systemconf
 
 generate_userconf
 
-sudo nix flake init --template github:aCeTotal/nix
+sudo nix flake init --template github:aCeTotal/nix --extra-experimental-features nix-command --extra-experimental-features flakes
 
 sudo nixos-rebuild switch --flake /etc/nixos#default
 
