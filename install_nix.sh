@@ -1,8 +1,5 @@
 #!/usr/bin/env -S bash -e
 
-# Fixing annoying issue that breaks GitHub Actions
-# shellcheck disable=SC2001
-
 # Cleaning the TTY.
 clear
 
@@ -16,7 +13,7 @@ RESET='\e[0m'
 
 # Pretty print (function).
 info_print () {
-    echo -e "${BOLD}${BGREEN}[ ${BYELLOW}•${BGREEN} ] $1${RESET}"
+    echo -e "${BOLD}${BGREEN}[ ${BBLUE}•${BYELLOW} ] $1${RESET}"
 }
 
 # Pretty print for input (function).
@@ -96,47 +93,18 @@ locale_selector () {
     esac
 }
 
-# Selecting Keyboard layout.
-locale_selector () {
-    info_print "Select an extra locale for Time, Measurement, Numeric ect. that will be used alongside the en_US locale:"
-    info_print "1) English all the way!"
-    info_print "2) Norwegian"
-    info_print "3) Swedish"
-    info_print "4) Danish"
-    info_print "5) German"
-    info_print "6) Spanish"
-    input_print "Please select the number of the corresponding locale (e.g. 1): " 
-    read -r xtra_locale_choice
-    case $xtra_locale_choice in
-        1 ) xtra_locale="en_US.UTF-8"
-            return 0;;
-        2 ) xtra_locale="nb_NO.UTF-8"
-            return 0;;
-        3 ) xtra_locale="sv_SE.UTF-8"
-            return 0;;
-        4 ) xtra_locale="da_DK.UTF-8"
-            return 0;;
-        5 ) xtra_locale="de_DE.UTF-8"
-            return 0;;
-        6 ) xtra_locale="es_ES.UTF-8"
-            return 0;;
-        * ) error_print "You did not enter a valid selection, please try again."
-            return 1
-    esac
-}
-
 # Welcome screen.
-echo -ne "${BOLD}${BYELLOW}
-======================================================================
+echo -ne "${BOLD}${BGREEN}
+=========================================================
 
-██╗  ██╗██╗   ██╗██████╗ ██████╗        █████╗ ██████╗  ██████╗██╗  ██╗
-██║  ██║╚██╗ ██╔╝██╔══██╗██╔══██╗      ██╔══██╗██╔══██╗██╔════╝██║  ██║
-███████║ ╚████╔╝ ██████╔╝██████╔╝█████╗███████║██████╔╝██║     ███████║
-██╔══██║  ╚██╔╝  ██╔═══╝ ██╔══██╗╚════╝██╔══██║██╔══██╗██║     ██╔══██║
-██║  ██║   ██║   ██║     ██║  ██║      ██║  ██║██║  ██║╚██████╗██║  ██║
-╚═╝  ╚═╝   ╚═╝   ╚═╝     ╚═╝  ╚═╝      ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
-                                                                       
-======================================================================
+██╗  ██╗██╗   ██╗██████╗ ██████╗ ███╗   ██╗██╗██╗  ██╗
+██║  ██║╚██╗ ██╔╝██╔══██╗██╔══██╗████╗  ██║██║╚██╗██╔╝
+███████║ ╚████╔╝ ██████╔╝██████╔╝██╔██╗ ██║██║ ╚███╔╝ 
+██╔══██║  ╚██╔╝  ██╔═══╝ ██╔══██╗██║╚██╗██║██║ ██╔██╗ 
+██║  ██║   ██║   ██║     ██║  ██║██║ ╚████║██║██╔╝ ██╗
+╚═╝  ╚═╝   ╚═╝   ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝
+                                                      
+=========================================================
 ${RESET}"
 info_print "Welcome to the installation of HyprNix! :)"
 
@@ -157,8 +125,8 @@ until hostname_selector; do : ; done
 # User choses the hostname.
 until username_selector; do : ; done
 
-# Setting up the kernel.
-until kernel_selector; do : ; done
+# User choses if he wants an xtra locale alongside en_US.
+until locale_selector; do : ; done
 
 
 # Warn user about deletion of old partition scheme.
@@ -215,7 +183,7 @@ info_print "Creating mountpoints and mounting the newly created subvolumes."
 }
 
 generate_systemconf () {
-# Create Configuration.nix.
+# Generates system config | Configuration.nix.
 info_print "Generating the system config / configuration.nix"
 sudo rm /mnt/etc/nixos/configuration.nix &>/dev/null
 
@@ -241,6 +209,9 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.efi.efiSysMountPoint = "/boot";
+
+  # Installs Intel/AMD Microcode
+  $microcode
 
   # Networking
   networking.networkmanager.enable = true;
@@ -372,7 +343,7 @@ return 0
 }
 
 generate_userconf () {
-# Create Configuration.nix.
+# Generates Home-Manager - user config | Home.nix.
 info_print "Generating the user config (Home-Manager) / home.nix"
 sudo rm /mnt/etc/nixos/home.nix &>/dev/null
 cat << EOF | sudo tee -a "/mnt/etc/nixos/home.nix" &>/dev/null
