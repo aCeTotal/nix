@@ -350,7 +350,7 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/home.nix" &>/dev/null
 
 { config, pkgs, ... }:
 let
-  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/master.tar.gz";
+  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-23.11.tar.gz";
 in
 {
   imports = [
@@ -358,7 +358,10 @@ in
   ];
 
     home-manager.users.$username = {
-    home.stateVersion = "18.09";
+
+      home.username = "$username";
+      home.homeDirectory = "/home/$username";
+      home.stateVersion = "23.11";
 
     # Hyprland - Tiling Window Manager Installation
     wayland.windowManager.hyprland = {
