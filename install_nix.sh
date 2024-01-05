@@ -119,7 +119,7 @@ keyboard_layout () {
     info_print "5) German"
     info_print "6) Spanish"
     echo
-    input_print "Please select the number of the corresponding locale (e.g. 1): " 
+    input_print "Please select the number of the corresponding keyboard layout (e.g. 1): " 
     read -r keyboard_layout_choice
     case $keyboard_layout_choice in
         1 ) keyboard_layout="us"
