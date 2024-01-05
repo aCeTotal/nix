@@ -276,8 +276,6 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
   imports =
     [   # Include the results of the hardware scan.
         ./hardware-configuration.nix
-        # Include Home Manager
-        inputs.home-manager.nixosModules.default
     ];
 
   # Bootloader
@@ -317,13 +315,6 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
     description = "";
     extraGroups = [ "networkmanager" "wheel" "disk" "power" "video" ];
     packages = with pkgs; [];
-  };
-
-  home-manager = {
-    extraSpecialArgs = { inherit inputs; };
-    users = {
-      "$username" = import ./home.nix
-    };
   };
 
   # List packages installed in system profile. To search, run:
@@ -503,7 +494,7 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/flake.nix" &>/dev/null
 
 {
 
-  descriptions = "HyprNix Simple Flake";
+  description = "HyprNix Simple Flake";
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
@@ -535,9 +526,9 @@ mount_subvolumes
 
 generate_systemconf
 
-generate_userconf
+#generate_userconf
 
 generate_flake
 
-sudo nixos-install --no-root-passwd --flake /mnt/etc/nixos --extra-experimental-features nix-command --extra-experimental-features flakes
+sudo nixos-install --no-root-passwd --flake /mnt/etc/nixos#$hostname
 
