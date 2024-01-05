@@ -292,8 +292,6 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
   networking.networkmanager.enable = true;
   networking.hostName = "$hostname"; # Define your hostname.
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
   # Set your time zone.
   time.timeZone = "$timezone";
 
@@ -420,6 +418,9 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "23.11"; # Did you read the comment?
 
+  # Enables the use of flakes and some other nice features
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
 }
 
 EOF
@@ -494,19 +495,49 @@ EOF
 return 0
 }
 
+generate_flake () {
+# Generates a flake | flake.nix.
+info_print "Generating a simple flake to track updates / flake.nix"
+info_print "It is now up to you if you want to take the next step into git"
+cat << EOF | sudo tee -a "/mnt/etc/nixos/flake.nix" &>/dev/null
+
+{
+
+  descriptions = "HyprNix Simple Flake";
+
+  inputs = {
+    nixpkgs.url = "nixpkgs/nixos-unstable";
+  };
+
+  outputs = { self, nixpkgs, ... }:
+    let
+      lib = nixpkgs.lib;
+    in {
+    nixosConfigurations = {
+        $hostname = lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [ ./configuration.nix ];
+        };
+    };
+  };
+
+}
+
+
+EOF
+return 0
+}
+
 # Mount the BTRFS subvolumes
 mount_subvolumes
 
-generate_preconf
-
-sudo nixos-install --no-root-passwd
+#generate_preconf
 
 generate_systemconf
 
 generate_userconf
 
-cd /mnt/etc/nixos
-sudo nix flake init --template github:aCeTotal/nix --extra-experimental-features nix-command --extra-experimental-features flakes
+generate_flake
 
-sudo nixos-rebuild switch --flake /mnt/etc/nixos#default
+sudo nixos-install --no-root-passwd --flake /mnt/etc/nixos --extra-experimental-features nix-command --extra-experimental-features flakes
 
