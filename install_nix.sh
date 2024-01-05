@@ -354,6 +354,8 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
     libinput.enable = true;
   };
 
+  console.keyMap = "$keyboard_layout";
+
   services.pipewire = {
     enable = true;
     alsa.enable = true;
