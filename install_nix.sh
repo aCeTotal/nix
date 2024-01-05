@@ -60,8 +60,10 @@ username_selector () {
         error_print "You need to enter a username in order to continue!"
         return 1
     fi
+    echo
     info_print "Oh! Hi, $username! Welcome to the world of NixOS!"
     sleep 4
+    echo
     info_print "Let's continue :)"
     sleep 2
 
@@ -70,6 +72,7 @@ username_selector () {
 
 # Selecting Locale to use alongside the US-Locale. .
 locale_selector () {
+    echo
     info_print "Select an extra locale for Time, Measurement, Numeric ect. that will be used alongside the en_US locale:"
     echo
     info_print "1) English all the way!"
@@ -147,12 +150,15 @@ echo -ne "${BOLD}${BGREEN}
 =========================================================
 ${RESET}"
 info_print "Welcome to the installation of HyprNix! :)"
+echo
 
 # Choosing the target for the installation.
 info_print "Available disks for the installation:"
+echo
 lsblk
 echo
 PS3="Please select the number of the corresponding disk (e.g. 1): "
+echo
 select ENTRY in $(lsblk -dpnoNAME|grep -P "/dev/sd|nvme|vd");
 do
     DISK="$ENTRY"
@@ -456,6 +462,7 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/home.nix" &>/dev/null
 };
 
 EOF
+echo
 return 0
 }
 
@@ -503,19 +510,19 @@ generate_systemconf
 
 generate_flake
 
-echo
-info_print "Rebooting!"
-sleep 2
-info_print "3"
-sleep 2
-info_print "2"
-sleep 2
-info_print "1"
 sudo mkdir -p /mnt/home/$username/.dotfiles &>/dev/null
 sudo cp /mnt/etc/nixos/* /mnt/home/$username/.dotfiles &>/dev/null
 sudo nixos-install --no-root-passwd --flake /mnt/etc/nixos#$hostname &>/dev/null
 sudo chown -R $username: /mnt/home/$username/.dotfiles &>/dev/null
-sleep 1
+echo
+info_print "Rebooting!"
+sleep 3
+info_print "3..."
+sleep 3
+info_print "2..."
+sleep 3
+info_print "1..."
+sleep 2
 clear
 
 # GoodBye screen.
@@ -531,6 +538,6 @@ echo -ne "${BOLD}${BRED}
                                                       
 ${RESET}"
 
-sleep 1
-reboot
+sleep 2
+sudo reboot
 
