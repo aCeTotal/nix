@@ -530,5 +530,8 @@ generate_systemconf
 
 generate_flake
 
+sudo mkdir -p /mnt/home/$username/.dotfiles
+sudo cp /mnt/etc/nixos/* /mnt/home/$username/.dotfiles
+sudo chown -R /mnt/home/$username/.dotfiles $username:
 sudo nixos-install --no-root-passwd --flake /mnt/etc/nixos#$hostname
 
