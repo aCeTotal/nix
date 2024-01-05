@@ -189,6 +189,9 @@ until username_selector; do : ; done
 # User choses if he wants an xtra locale alongside en_US.
 until locale_selector; do : ; done
 
+# User choses if he wants an xtra locale alongside en_US.
+until keyboard_layout; do : ; done
+
 # Creating a new partition scheme.
 echo
 info_print "Creating the partitions on $DISK."
