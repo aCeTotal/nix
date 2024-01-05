@@ -40,18 +40,20 @@ microcode_detector () {
 
 # User enters a hostname (function).
 hostname_selector () {
+    echo
     input_print "Please enter the hostname Eg. OfficePC: "
     read -r hostname
     if [[ -z "$hostname" ]]; then
         error_print "You need to enter a hostname in order to continue. Eg. OfficePC, HyprNix ect."
         return 1
     fi
-    echo
+
     return 0
 }
 
 # User enters a username (function).
 username_selector () {
+    echo
     input_print "Please enter the name of your user: "
     read -r username
     if [[ -z "$username" ]]; then
@@ -62,19 +64,21 @@ username_selector () {
     sleep 4
     info_print "Let's continue :)"
     sleep 2
-    echo
+
     return 0
 }
 
 # Selecting Locale to use alongside the US-Locale. .
 locale_selector () {
     info_print "Select an extra locale for Time, Measurement, Numeric ect. that will be used alongside the en_US locale:"
+    echo
     info_print "1) English all the way!"
     info_print "2) Norwegian"
     info_print "3) Swedish"
     info_print "4) Danish"
     info_print "5) German"
     info_print "6) Spanish"
+    echo
     input_print "Please select the number of the corresponding locale (e.g. 1): " 
     read -r xtra_locale_choice
     case $xtra_locale_choice in
@@ -93,7 +97,40 @@ locale_selector () {
         * ) error_print "You did not enter a valid selection, please try again."
             return 1
     esac
+
+}
+
+# Selecting Locale to use alongside the US-Locale. .
+keyboard_layout () {
+  echo
+    info_print "Select your keyboard layout:"
     echo
+    info_print "1) English"
+    info_print "2) Norwegian"
+    info_print "3) Swedish"
+    info_print "4) Danish"
+    info_print "5) German"
+    info_print "6) Spanish"
+    echo
+    input_print "Please select the number of the corresponding locale (e.g. 1): " 
+    read -r xtra_locale_choice
+    case $keyboard_layout_choice in
+        1 ) keyboard_layout="us"
+            return 0;;
+        2 ) keyboard_layout="no"
+            return 0;;
+        3 ) keyboard_layout="se"
+            return 0;;
+        4 ) keyboard_layout="dk"
+            return 0;;
+        5 ) keyboard_layout="de"
+            return 0;;
+        6 ) keyboard_layout="es"
+            return 0;;
+        * ) error_print "You did not enter a valid selection, please try again."
+            return 1
+    esac
+
 }
 
 # Welcome screen.
@@ -114,21 +151,25 @@ info_print "Welcome to the installation of HyprNix! :)"
 # Choosing the target for the installation.
 info_print "Available disks for the installation:"
 lsblk
+echo
 PS3="Please select the number of the corresponding disk (e.g. 1): "
 select ENTRY in $(lsblk -dpnoNAME|grep -P "/dev/sd|nvme|vd");
 do
     DISK="$ENTRY"
+    echo
     info_print "HyprNix will be installed on the following disk: $DISK"
     break
 done
 
 # Warn user about deletion of old partition scheme.
+echo
 input_print "WARNING! This WILL wipe the current partition table on $DISK. Do you agree [y/N]?: "
 read -r disk_response
 if ! [[ "${disk_response,,}" =~ ^(yes|y)$ ]]; then
     error_print "Quitting."
     exit
 fi
+echo
 info_print "Wiping $DISK."
 sudo wipefs -af "$DISK" &>/dev/null
 sudo sgdisk -Zo "$DISK" &>/dev/null
@@ -143,6 +184,7 @@ until username_selector; do : ; done
 until locale_selector; do : ; done
 
 # Creating a new partition scheme.
+echo
 info_print "Creating the partitions on $DISK."
 sudo parted -s "$DISK" mklabel gpt
 sudo parted -s "$DISK" mkpart ESP fat32 1MiB 513MiB
@@ -153,16 +195,19 @@ ESP="/dev/disk/by-partlabel/ESP"
 ROOT="/dev/disk/by-partlabel/ROOT"
 
 # Formatting the ESP as FAT32.
+echo
 info_print "Formatting the EFI Partition as FAT32."
 sudo mkfs.fat -F 32 "$ESP"
 
 # Mounting the root partition.
+echo
 info_print "Mounting the root partititon"
 sudo mkfs.btrfs -f "$ROOT"
 sudo mkdir -p /mnt
 sudo mount "$ROOT" /mnt
 
 # Creating BTRFS subvolumes.
+echo
 info_print "Creating BTRFS subvolumes."
 subvols=(root home nix log)
 for subvol in '' "${subvols[@]}"; do
@@ -170,6 +215,7 @@ for subvol in '' "${subvols[@]}"; do
 done
 
 mount_subvolumes () {
+echo
 info_print "Creating mountpoints and mounting the newly created subvolumes."
   sudo umount -l /mnt
   sudo mount -t btrfs -o subvol=@root,defaults,noatime,compress=zstd,discard=async,ssd "$ROOT" /mnt 
@@ -181,88 +227,14 @@ info_print "Creating mountpoints and mounting the newly created subvolumes."
 
   info_print "Generating the hardware-config / hardware-configuration.nix"
   sudo nixos-generate-config --root /mnt
-  echo
+
   return 0
 }
 
-generate_preconf () {
-# Generates system config | Configuration.nix.
-info_print "Generating the pre system conf"
-sudo rm /mnt/etc/nixos/configuration.nix &>/dev/null
-
-timezone=$(curl -s http://ip-api.com/line?fields=timezone)
-
-cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
-
-{ pkgs, lib, inputs, ... }:
-
-{
-  imports =
-    [   # Include the results of the hardware scan.
-        ./hardware-configuration.nix
-    ];
-
-  # Bootloader
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.efi.efiSysMountPoint = "/boot";
-
-  # Networking
-  networking.networkmanager.enable = true;
-  networking.hostName = "$hostname"; # Define your hostname.
-
-  nix = {
-    package = pkgs.nixFlakes;
-    extraOptions = ''
-    experimental-features = nix-command flakes
-    '';
-  };
-
-  # Set your time zone.
-  time.timeZone = "$timezone";
-
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
-
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "$xtra_locale";
-    LC_IDENTIFICATION = "$xtra_locale";
-    LC_MEASUREMENT = "$xtra_locale";
-    LC_MONETARY = "$xtra_locale";
-    LC_NAME = "$xtra_locale";
-    LC_NUMERIC = "$xtra_locale";
-    LC_PAPER = "$xtra_locale";
-    LC_TELEPHONE = "$xtra_locale";
-    LC_TIME = "$xtra_locale";
-  };
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.$username = {
-    isNormalUser = true;
-    initialPassword = "nixos";
-    description = "";
-    extraGroups = [ "networkmanager" "wheel" "disk" "power" "video" ];
-    packages = with pkgs; [];
-  };
-
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-  environment.systemPackages = with pkgs; [
-    vim
-    wget
-    git
-  ];
-
-  system.stateVersion = "23.11";
-
-}
-
-EOF
-return 0
-}
 
 generate_systemconf () {
 # Generates system config | Configuration.nix.
+echo
 info_print "Generating the system config / configuration.nix"
 sudo rm /mnt/etc/nixos/configuration.nix &>/dev/null
 
@@ -371,7 +343,7 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
   services.openssh.enable = true;
   services.fstrim.enable = true;
   services.xserver = {
-    layout = "us";
+    layout = "$keyboard_layout";
     xkbVariant = "";
     libinput.enable = true;
   };
@@ -420,6 +392,7 @@ return 0
 
 generate_userconf () {
 # Generates Home-Manager - user config | Home.nix.
+echo
 info_print "Generating the user config (Home-Manager) / home.nix"
 sudo rm /mnt/etc/nixos/home.nix &>/dev/null
 cat << EOF | sudo tee -a "/mnt/etc/nixos/home.nix" &>/dev/null
@@ -488,8 +461,8 @@ return 0
 
 generate_flake () {
 # Generates a flake | flake.nix.
+echo
 info_print "Generating a simple flake to track updates / flake.nix"
-info_print "It is now up to you if you want to take the next step into git"
 cat << EOF | sudo tee -a "/mnt/etc/nixos/flake.nix" &>/dev/null
 
 {
@@ -530,8 +503,34 @@ generate_systemconf
 
 generate_flake
 
-sudo mkdir -p /mnt/home/$username/.dotfiles
-sudo cp /mnt/etc/nixos/* /mnt/home/$username/.dotfiles
-sudo chown -R /mnt/home/$username/.dotfiles $username:
-sudo nixos-install --no-root-passwd --flake /mnt/etc/nixos#$hostname
+echo
+info_print "Rebooting!"
+sleep 2
+info_print "3"
+sleep 2
+info_print "2"
+sleep 2
+info_print "1"
+sudo mkdir -p /mnt/home/$username/.dotfiles &>/dev/null
+sudo cp /mnt/etc/nixos/* /mnt/home/$username/.dotfiles &>/dev/null
+sudo nixos-install --no-root-passwd --flake /mnt/etc/nixos#$hostname &>/dev/null
+sudo chown -R $username: /mnt/home/$username/.dotfiles &>/dev/null
+sleep 1
+clear
+
+# GoodBye screen.
+echo -ne "${BOLD}${BRED}
+
+
+    ▄▄▄▄·  ▄▄▄·  ▐ ▄  ▄▄ • ▄▄     
+    ▐█ ▀█▪▐█ ▀█ •█▌▐█▐█ ▀ ▪██▌    
+    ▐█▀▀█▄▄█▀▀█ ▐█▐▐▌▄█ ▀█▄▐█·    
+    ██▄▪▐█▐█ ▪▐▌██▐█▌▐█▄▪▐█.▀     
+    ·▀▀▀▀  ▀  ▀ ▀▀ █▪·▀▀▀▀  ▀     
+
+                                                      
+${RESET}"
+
+sleep 1
+reboot
 
