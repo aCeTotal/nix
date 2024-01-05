@@ -73,6 +73,8 @@ username_selector () {
 # Selecting Locale to use alongside the US-Locale. .
 locale_selector () {
     echo
+    echo
+    echo
     info_print "Select an extra locale for Time, Measurement, Numeric ect. that will be used alongside the en_US locale:"
     echo
     info_print "1) English all the way!"
@@ -106,6 +108,8 @@ locale_selector () {
 # Selecting Locale to use alongside the US-Locale. .
 keyboard_layout () {
   echo
+  echo
+  echo
     info_print "Select your keyboard layout:"
     echo
     info_print "1) English"
@@ -115,7 +119,7 @@ keyboard_layout () {
     info_print "5) German"
     info_print "6) Spanish"
     echo
-    input_print "Please select the number of the corresponding keyboard layout (e.g. 1): " 
+    input_print "Please select the number of the corresponding locale (e.g. 1): " 
     read -r keyboard_layout_choice
     case $keyboard_layout_choice in
         1 ) keyboard_layout="us"
