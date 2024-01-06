@@ -415,15 +415,10 @@ info_print "Generating the user config (Home-Manager) / home.nix"
 sudo rm /mnt/etc/nixos/home.nix &>/dev/null
 cat << EOF | sudo tee -a "/mnt/etc/nixos/home.nix" &>/dev/null
 
-{ config, pkgs, ... }:
-
-
-let
-  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/master.tar.gz";
-in
+{ config, pkgs, inputs, ... }:
 
 {
-      imports = [ <home-manager/nixos> ];
+      imports = [ inputs.home-manager.nixosModules.home-manager ];
 
       home.username = "$username";
       home.homeDirectory = "/home/$username";
@@ -478,6 +473,7 @@ in
 
 
 };
+}
 
 EOF
 echo
@@ -500,7 +496,7 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/flake.nix" &>/dev/null
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }:
+  outputs = { self, nixpkgs, home-manager, ... }@inputs:
     let
       lib = nixpkgs.lib;
       system = "x86_64-linux";
@@ -509,6 +505,7 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/flake.nix" &>/dev/null
     nixosConfigurations = {
         $hostname = lib.nixosSystem {
           inherit system;
+          specialArgs = {inherit inputs;};
           modules = [ ./configuration.nix ];
         };
     };
