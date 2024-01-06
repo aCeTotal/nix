@@ -261,8 +261,10 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
   imports =
     [   # Include the results of the hardware scan.
         ./hardware-configuration.nix
+        # Include Home Manager
         ./home.nix
     ];
+
 
   # Bootloader
   boot.loader.systemd-boot.enable = true;
@@ -520,7 +522,7 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/flake.nix" &>/dev/null
           inherit pkgs;
           modules = [ ./home.nix ];
         };
-    }
+    };
   };
 
 }
@@ -549,8 +551,7 @@ sudo cp /mnt/etc/nixos/* /mnt/home/$username/.dotfiles &>/dev/null
 sudo nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
 sudo nix-channel --update
 
-
-sudo nixos-install --no-root-passwd --flake /mnt/etc/nixos#$hostname &>/dev/null
+sudo nixos-install --no-root-passwd --flake /mnt/etc/nixos#$hostname
 sudo chown -R $username: /mnt/home/$username/.dotfiles &>/dev/null
 echo
 info_print "Rebooting!"
