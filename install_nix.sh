@@ -555,7 +555,7 @@ sudo chown -R $username: /mnt/home/$username/.dotfiles &>/dev/null
 echo
 info_print "Rebooting!"
 echo
-sleep 3
+sleep 2
 info_print "3..."
 echo
 sleep 2
@@ -565,7 +565,7 @@ sleep 2
 info_print "1..."
 echo
 sleep 2
-clear
+#clear
 
 # GoodBye screen.
 echo -ne "${BOLD}${BRED}
@@ -581,5 +581,5 @@ echo -ne "${BOLD}${BRED}
 ${RESET}"
 
 sleep 1
-sudo reboot
+#sudo reboot
 
