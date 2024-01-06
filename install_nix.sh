@@ -473,7 +473,7 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/home.nix" &>/dev/null
 
 
 
-};
+}
 
 EOF
 echo
