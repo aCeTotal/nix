@@ -261,6 +261,7 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/configuration.nix" &>/dev/null
   imports =
     [   # Include the results of the hardware scan.
         ./hardware-configuration.nix
+        ./home.nix
     ];
 
   # Bootloader
@@ -414,7 +415,17 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/home.nix" &>/dev/null
 
 { config, pkgs, ... }:
 
+
+let
+  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/master.tar.gz";
+in
 {
+
+{
+      imports = [
+        (import "${home-manager}/nixos")
+      ];
+
 
       home.username = "$username";
       home.homeDirectory = "/home/$username";
@@ -483,22 +494,33 @@ cat << EOF | sudo tee -a "/mnt/etc/nixos/flake.nix" &>/dev/null
 
 {
 
-  description = "HyprNix Simple Flake";
+  description = "HyprNix Default Flake";
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
+    home-manager.url = "github:nix-community/home-manager";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, ... }:
+  outputs = { self, nixpkgs, home-manager, ... }:
     let
       lib = nixpkgs.lib;
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
     in {
     nixosConfigurations = {
         $hostname = lib.nixosSystem {
-          system = "x86_64-linux";
+          inherit system;
           modules = [ ./configuration.nix ];
         };
     };
+
+    homeConfigurations = {
+          $username = home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          modules = [ ./home.nix ];
+        };
+    }
   };
 
 }
@@ -515,22 +537,33 @@ mount_subvolumes
 
 generate_systemconf
 
-#generate_userconf
+generate_userconf
 
 generate_flake
 
+info_print "Installing HyprNix!"
 sudo mkdir -p /mnt/home/$username/.dotfiles &>/dev/null
 sudo cp /mnt/etc/nixos/* /mnt/home/$username/.dotfiles &>/dev/null
+
+#Home-Manager Channel
+sudo nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
+sudo nix-channel --update
+
+
 sudo nixos-install --no-root-passwd --flake /mnt/etc/nixos#$hostname &>/dev/null
 sudo chown -R $username: /mnt/home/$username/.dotfiles &>/dev/null
 echo
 info_print "Rebooting!"
+echo
 sleep 3
 info_print "3..."
-sleep 3
+echo
+sleep 2
 info_print "2..."
-sleep 3
+echo
+sleep 2
 info_print "1..."
+echo
 sleep 2
 clear
 
@@ -547,6 +580,6 @@ echo -ne "${BOLD}${BRED}
                                                       
 ${RESET}"
 
-sleep 2
+sleep 1
 sudo reboot
 
